@@ -41,7 +41,7 @@ public class ClientService extends Service {
 			public void run() {
 				try {
 					Looper.prepare();
-					echoSocket = new Socket("localhost", 12345);
+					echoSocket = new Socket("10.0.2.2", 5000);
 					out = new PrintWriter(echoSocket.getOutputStream(), true);
 		            in = new BufferedReader(new InputStreamReader(
 		                                        echoSocket.getInputStream()));					
@@ -65,7 +65,7 @@ public class ClientService extends Service {
 				}
 			}
 
-		}, "Server thread");
+		}, "Client thread");
 		clientThread.start();
 	}
 }
