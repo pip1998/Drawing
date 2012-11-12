@@ -1,141 +1,134 @@
 package com.dc.drawing;
 
-import java.util.ArrayList;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.util.AttributeSet;
-import android.util.Log;
+import android.graphics.RectF;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.Button;
-import android.widget.FrameLayout;
+import android.view.View;
 
 
-//import android.view.SurfaceView;
+public class DrawingSurfaceView extends View {
 
-public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
+  private static final float STROKE_WIDTH = 5f;
 
-	private Paint paint = new Paint();
-	public DrawingThread _thread;
-	private Shape current;
-	private ArrayList<Shape> shapes;
-	
-	private Canvas bCanvas = null;
-	private Bitmap bitmap = null;
-	private Matrix matrix;
-	
-	int drawCount = 1;
-	
-	/*
-	 * Constructors
-	 */
-	public DrawingSurfaceView(Context context) {
-		super(context);
-		getHolder().addCallback(this);
-		_thread = new DrawingThread(getHolder(), this);
-		shapes = new ArrayList<Shape>();
-		
-		Log.d("Constructor","Hello, DrawingSurfaceView!");
-	}
+  /** Need to track this so the dirty region can accommodate the stroke. **/
+  private static final float HALF_STROKE_WIDTH = STROKE_WIDTH / 2;
 
-	public DrawingSurfaceView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-	}
-	
-	@Override
-	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+  private Paint paint = new Paint();
+  private Path path = new Path();
 
-	}
+  /**
+* Optimizes painting by invalidating the smallest possible area.
+*/
+  private float lastTouchX;
+  private float lastTouchY;
+  private final RectF dirtyRect = new RectF();
 
-	@Override
-    public void surfaceCreated(SurfaceHolder holder) {
-		Log.d("Surface","Telling thread to start");
-        _thread.setRunning(true);        
-        _thread.start();
-        
-        Log.d("Surface","Creating bitmap");
-		bitmap = Bitmap.createBitmap(getWidth(),getHeight(), Bitmap.Config.ARGB_8888);
-		bCanvas = new Canvas();
-		bCanvas.setBitmap(bitmap);
-		
-		matrix = new Matrix();
-    }
+  public DrawingSurfaceView(Context context) {
+    super(context);
 
-	@Override
-	public void surfaceDestroyed(SurfaceHolder holder) {
-        boolean retry = true;
-        _thread.setRunning(false);
-        while (retry) {
-            try {
-                _thread.join();
-                retry = false;
-            } catch (InterruptedException e) {
-                Log.d("Destroyed", "We were interruped?: " + e);
-            }
+    paint.setAntiAlias(true);
+    paint.setColor(Color.BLACK);
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setStrokeJoin(Paint.Join.ROUND);
+    paint.setStrokeWidth(STROKE_WIDTH);
+  }
+
+  /**
+* Erases the signature.
+*/
+  public void clear() {
+    path.reset();
+
+    // Repaints the entire view.
+    invalidate();
+  }
+
+  @Override
+  protected void onDraw(Canvas canvas) {
+    canvas.drawPath(path, paint);
+  }
+
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
+    float eventX = event.getX();
+    float eventY = event.getY();
+
+    switch (event.getAction()) {
+      case MotionEvent.ACTION_DOWN:
+        path.moveTo(eventX, eventY);
+        lastTouchX = eventX;
+        lastTouchY = eventY;
+        // There is no end point yet, so don't waste cycles invalidating.
+        return true;
+
+      case MotionEvent.ACTION_MOVE:
+      case MotionEvent.ACTION_UP:
+        // Start tracking the dirty region.
+        resetDirtyRect(eventX, eventY);
+
+        // When the hardware tracks events faster than they are delivered, the
+        // event will contain a history of those skipped points.
+        int historySize = event.getHistorySize();
+        for (int i = 0; i < historySize; i++) {
+          float historicalX = event.getHistoricalX(i);
+          float historicalY = event.getHistoricalY(i);
+          expandDirtyRect(historicalX, historicalY);
+          path.lineTo(historicalX, historicalY);
         }
+
+        // After replaying history, connect the line to the touch point.
+        path.lineTo(eventX, eventY);
+        break;
+
+      default:
+        //debug("Ignored touch event: " + event.toString());
+        return false;
     }
 
-	@Override
-	protected void onDraw(Canvas canvas) {
-			
-		for (Shape s : shapes) {
-			for (Path path : ((Line)s).getGraphicsPath()) {
-				paint.setAntiAlias(true);
-				paint.setDither(true);
-		    	paint.setStyle(Paint.Style.STROKE);
-		    	paint.setStrokeJoin(Paint.Join.ROUND);
-		    	paint.setStrokeCap(Paint.Cap.ROUND);
-				paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
-				paint.setStrokeWidth(s.getStrokeWidth());
-        	    
-				canvas.drawPath(path, paint);
-    		}
-		}		
-	}
+    // Include half the stroke width to avoid clipping.
+    invalidate(
+        (int) (dirtyRect.left - HALF_STROKE_WIDTH),
+        (int) (dirtyRect.top - HALF_STROKE_WIDTH),
+        (int) (dirtyRect.right + HALF_STROKE_WIDTH),
+        (int) (dirtyRect.bottom + HALF_STROKE_WIDTH));
+    
+    lastTouchX = eventX;
+    lastTouchY = eventY;
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		synchronized (_thread.getSurfaceHolder()) {
-			Log.d("Touch","You touched me");
-			float touched_x = event.getX();
-			float touched_y = event.getY();
+    return true;
+  }
 
-			int action = event.getAction();
+  /**
+* Called when replaying history to ensure the dirty region includes all
+* points.
+*/
+  private void expandDirtyRect(float historicalX, float historicalY) {
+    if (historicalX < dirtyRect.left) {
+      dirtyRect.left = historicalX;
+    } else if (historicalX > dirtyRect.right) {
+      dirtyRect.right = historicalX;
+    }
+    if (historicalY < dirtyRect.top) {
+      dirtyRect.top = historicalY;
+    } else if (historicalY > dirtyRect.bottom) {
+      dirtyRect.bottom = historicalY;
+    }
+  }
 
-			switch (action) {
-			case MotionEvent.ACTION_DOWN:
-				current = new Line();
-				current.setrgb(255, 0, 255);
-				current.setStrokeWidth(5);
-				((Line) current).getPath().moveTo(touched_x, touched_y);
-				((Line) current).getPath().lineTo(touched_x, touched_y);
-				break;
-			case MotionEvent.ACTION_MOVE:
-				((Line) current).getPath().lineTo(touched_x, touched_y);
-				break;
-			case MotionEvent.ACTION_UP:
-				((Line) current).getPath().lineTo(touched_x, touched_y);
-				((Line) current).getGraphicsPath().add(
-				((Line) current).getPath());
-				shapes.add(current);
-				break;
-			case MotionEvent.ACTION_CANCEL:
+  /**
+* Resets the dirty region when the motion event occurs.
+*/
+  private void resetDirtyRect(float eventX, float eventY) {
 
-				break;
-			case MotionEvent.ACTION_OUTSIDE:
-
-				break;
-			default:
-
-			}
-			
-			return true;
-		}
-	}
+    // The lastTouchX and lastTouchY were set when the ACTION_DOWN
+    // motion event occurred.
+    dirtyRect.left = Math.min(lastTouchX, eventX);
+    dirtyRect.right = Math.max(lastTouchX, eventX);
+    dirtyRect.top = Math.min(lastTouchY, eventY);
+    dirtyRect.bottom = Math.max(lastTouchY, eventY);
+  }
 }

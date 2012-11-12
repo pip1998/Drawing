@@ -76,16 +76,4 @@ public class DrawingActivity extends Activity {
 				
 		setContentView(surfaceLayout);
 	}
-	
-    @Override
-    public void onPause() {
-    	super.onPause();
-    	surface.surfaceDestroyed(surface.getHolder());
-    }
-    
-    @Override
-    public void onStop() {
-    	super.onStop();
-    	surface.surfaceDestroyed(surface.getHolder());
-    }
 }
