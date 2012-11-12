@@ -3,6 +3,7 @@ package com.dc.drawing;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -36,16 +37,19 @@ public class ServerService extends Service {
 			public void run() {
 				try {
 					Looper.prepare();
-					ss = new ServerSocket(12345);					
+					ss = new ServerSocket(6000);
+					Log.d("ip: ", ss.getInetAddress().toString()); 	
 					ss.setReuseAddress(true);
 					ss.setPerformancePreferences(100, 100, 1);
 					while (!stopped) {
+						//This is blocking.
 						Socket accept = ss.accept();
 						accept.setPerformancePreferences(10, 100, 1);
 						accept.setKeepAlive(true);
 						
+						Log.d("ip: ", accept.getInetAddress().toString()); 						
 						Log.d("Server Loop", "Loop.");
-
+						
 						DataInputStream _in = null;
 						try {
 							_in = new DataInputStream(new BufferedInputStream(
