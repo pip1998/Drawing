@@ -13,6 +13,17 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        
+        <service
+        android:name=".ClientService"
+        android:label="Client Service" >
+    	</service>
+    	
+        <service
+        android:name=".ServerService"
+        android:label="Server Service" >
+    	</service>
+        
         <activity
             android:name=".DrawingActivity"
             android:label="@string/title_activity_drawing" >
@@ -21,7 +32,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity>        
     </application>
 
 </manifest>
