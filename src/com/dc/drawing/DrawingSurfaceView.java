@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Button;
+import android.widget.FrameLayout;
 
 
 //import android.view.SurfaceView;
@@ -54,7 +56,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 	@Override
     public void surfaceCreated(SurfaceHolder holder) {
 		Log.d("Surface","Telling thread to start");
-        _thread.setRunning(true);
+        _thread.setRunning(true);        
         _thread.start();
         
         Log.d("Surface","Creating bitmap");
@@ -81,7 +83,7 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		
+			
 		for (Shape s : shapes) {
 			for (Path path : ((Line)s).getGraphicsPath()) {
 				paint.setAntiAlias(true);
