@@ -35,6 +35,7 @@ public class DrawingSurfaceView extends View {
     paint.setStyle(Paint.Style.STROKE);
     paint.setStrokeJoin(Paint.Join.ROUND);
     paint.setStrokeWidth(STROKE_WIDTH);
+    paint.setAntiAlias(true);
   }
 
   /**
@@ -85,7 +86,6 @@ public class DrawingSurfaceView extends View {
         break;
 
       default:
-        //debug("Ignored touch event: " + event.toString());
         return false;
     }
 
