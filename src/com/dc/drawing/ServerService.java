@@ -3,12 +3,10 @@ package com.dc.drawing;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-
-import com.dc.drawing.ClientService.LocalClientBinder;
 
 import android.app.Service;
 import android.content.Intent;
@@ -51,7 +49,7 @@ public class ServerService extends Service {
 
 		Log.d("Server.onCreate()", "The server service is starting.");
 		Log.d(getClass().getSimpleName(), "onCreate");
-
+		
 		serverThread = new Thread(new Runnable() {
 
 			public void run() {
@@ -66,10 +64,29 @@ public class ServerService extends Service {
 						Socket accept = ss.accept();
 						accept.setPerformancePreferences(10, 100, 1);
 						accept.setKeepAlive(true);
-												
-						DataInputStream _in = null;
+				
+						ObjectInputStream obj_in = null;
+						try {
+							obj_in = new ObjectInputStream(accept.getInputStream());
+							Shape receivedShape = (Shape) obj_in.readObject();
+							ServerService.this.incomingShapes.add(receivedShape);
+						}
+						catch (IOException e)
+						{
+							e.printStackTrace();
+						}
+						
+						DataInputStream _in = null;						
 						try {
 							_in = new DataInputStream(new BufferedInputStream(accept.getInputStream(), 1024));
+							final DataInputStream output = _in;
+							handler.post(new Runnable() {
+					            public void run() {					               
+					               Toast.makeText(getApplicationContext(), "Server got data: " + output, Toast.LENGTH_LONG).show();               
+					               //this.run();
+					            }
+					         });
+
 							Log.d("Server","Got data?: " + _in);
 						} catch (IOException e2) {
 							e2.printStackTrace();
@@ -120,10 +137,7 @@ public class ServerService extends Service {
 		Log.d("Notification","Received message from client: " + notificationString);
 		handler.post(new Runnable() {
             public void run() {
-               CharSequence contentTitle = notificationString;
-        	   CharSequence contentText = "Hello World!";
-               Toast.makeText(getApplicationContext(), contentTitle + "-" + contentText, Toast.LENGTH_LONG).show();               
-               //this.run();
+               Toast.makeText(getApplicationContext(), notificationString, Toast.LENGTH_LONG).show();
             }
          });
 	}
