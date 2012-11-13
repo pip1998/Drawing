@@ -136,7 +136,14 @@ public class DrawingActivity extends Activity {
 	        	ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
-	        		Toast.makeText(getApplicationContext(), "Got a shape.", Toast.LENGTH_LONG).show();
+	        		runOnUiThread(new Runnable() {
+	        		    public void run() {
+	        		    	Toast.makeText(getApplicationContext(), 
+	        		    			"Got a shape.", 
+	        		    			Toast.LENGTH_LONG).
+	        		    		show();
+	        		    }
+	        		});	        		
 	        	}
         	}
         } catch (Throwable t) { //you should always ultimately catch all exceptions in timer tasks.

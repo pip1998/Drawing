@@ -2,7 +2,6 @@ package com.dc.drawing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -60,34 +59,24 @@ public class ClientService extends Service {
 				try {
 					Looper.prepare();
 					echoSocket = new Socket("10.0.2.2", 5000);					
-					out = new PrintWriter(echoSocket.getOutputStream(), true);	
+					//out = new PrintWriter(echoSocket.getOutputStream(), true);	
 					obj_out = new ObjectOutputStream(echoSocket.getOutputStream());
-		            in = new BufferedReader(new InputStreamReader(
-		                                        echoSocket.getInputStream()));					
+		            //in = new BufferedReader(new InputStreamReader(
+		            //                            echoSocket.getInputStream()));					
 					
-					while (!stopped) {						
-						
+					while (!stopped) {
 						//Send the shapes.
-						while(!outgoingShapes.isEmpty())
+						if(!outgoingShapes.isEmpty())
 						{
 							Shape toSend = outgoingShapes.remove(0);
 							obj_out.writeObject(toSend);
+							obj_out.flush();
 						}
-												
-						//int second = calendar.get(Calendar.SECOND);
-						/*
-						int seconds = (int)System.currentTimeMillis();
-						if(seconds % 4000 == 0)
-						{
-							Log.d("Client","Sending message to server");
-							String userInput = "This is data from the client";						
-							out.println(userInput);
-						}*/
 					}
 					
 				} catch (Throwable e) {
-					e.printStackTrace();
-					Log.e(getClass().getSimpleName(), "Error in Listener", e);
+					e.printStackTrace();					
+					Log.e("ClientService", "Error in Listener", e);
 				}
 
 				try {
