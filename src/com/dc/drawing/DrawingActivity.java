@@ -1,6 +1,7 @@
 package com.dc.drawing;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,9 +19,14 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 //telnet localhost 5554
@@ -35,6 +41,10 @@ public class DrawingActivity extends Activity {
 	boolean mBound = true;
 	
 	DrawingSurfaceView surface;
+	
+	Spinner colorSpinner;
+	ArrayAdapter<String> colorAdapter;
+	ArrayList<String> colorArray;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -43,8 +53,44 @@ public class DrawingActivity extends Activity {
 		
 		FrameLayout surfaceLayout = new FrameLayout(this);		
 		surface = new DrawingSurfaceView(this);		
-		LinearLayout surfaceWidgets = new LinearLayout(this);
-				
+		LinearLayout surfaceWidgets = new LinearLayout(this);		
+		
+		colorSpinner = new Spinner(this);	
+		colorArray = new ArrayList<String>();
+		colorArray.add("Red");
+		colorArray.add("Blue");
+		colorArray.add("Green");
+		colorArray.add("Black");
+		colorAdapter = new ArrayAdapter<String>(
+				this, 
+				android.R.layout.simple_spinner_dropdown_item, 
+				colorArray);
+		colorSpinner.setAdapter(colorAdapter);		
+		colorSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+		    @Override
+		    public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {		    	
+		    	switch(position)
+		    	{
+			    	case 0:
+			    		//It's red.
+			    		break;
+			    	case 1:
+			    		//It's blue.
+			    		break;
+			    	case 2:
+			    		//It's green.
+			    		break;
+			    	case 3:
+			    		//It's black.
+			    		break;
+		    	}
+		    }
+		    @Override
+		    public void onNothingSelected(AdapterView<?> parentView) {
+		        //Make it black or something.
+		    }
+		});
+		
 		final Button client = new Button(this);
 		final Button server = new Button(this);
 		client.setText("Join Game");
@@ -120,7 +166,8 @@ public class DrawingActivity extends Activity {
 		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(sendShape);
+		surfaceWidgets.addView(sendShape);		
+		surfaceWidgets.addView(colorSpinner);
 		
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
