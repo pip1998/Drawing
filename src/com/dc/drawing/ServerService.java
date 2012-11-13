@@ -66,14 +66,11 @@ public class ServerService extends Service {
 						Socket accept = ss.accept();
 						accept.setPerformancePreferences(10, 100, 1);
 						accept.setKeepAlive(true);
-						
-						Log.d("ip: ", accept.getInetAddress().toString()); 						
-						Log.d("Server Loop", "Loop.");
-						
+												
 						DataInputStream _in = null;
 						try {
-							_in = new DataInputStream(new BufferedInputStream(
-									accept.getInputStream(), 1024));
+							_in = new DataInputStream(new BufferedInputStream(accept.getInputStream(), 1024));
+							Log.d("Server","Got data?: " + _in);
 						} catch (IOException e2) {
 							e2.printStackTrace();
 						}
@@ -120,7 +117,7 @@ public class ServerService extends Service {
 	}
 
 	public void displayNotification(final String notificationString) {
-		// int icon = R.drawable.mp_warning_32x32_n;
+		Log.d("Notification","Received message from client: " + notificationString);
 		handler.post(new Runnable() {
             public void run() {
                CharSequence contentTitle = notificationString;

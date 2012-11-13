@@ -44,7 +44,7 @@ public class DrawingActivity extends Activity {
 		LinearLayout surfaceWidgets = new LinearLayout(this);
 				
 		Button client = new Button(this);
-		client.setText("Set as Client");
+		client.setText("Join Game");
 		client.setOnClickListener(new OnClickListener()
 		{
 			@Override
@@ -66,7 +66,7 @@ public class DrawingActivity extends Activity {
 		});
 		
 		Button server = new Button(this);
-		server.setText("Set as Server");
+		server.setText("Host Game");
 		server.setOnClickListener(new OnClickListener()
 		{
 			@Override

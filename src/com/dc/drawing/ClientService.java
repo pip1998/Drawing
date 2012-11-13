@@ -67,7 +67,6 @@ public class ClientService extends Service {
 		                                        echoSocket.getInputStream()));					
 					
 					while (!stopped) {						
-						Log.d("Client Loop", "Loop.");
 						
 						//Send the shapes.
 						if(!outgoingShapes.isEmpty())
@@ -79,7 +78,8 @@ public class ClientService extends Service {
 						int seconds = (int)System.currentTimeMillis();
 						if(seconds % 4000 == 0)
 						{
-							String userInput = "This is totally input.";						
+							Log.d("Client","Sending message to server");
+							String userInput = "This is data from the client";						
 							out.println(userInput);
 						}
 					}
