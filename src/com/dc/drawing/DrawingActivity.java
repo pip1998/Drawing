@@ -73,27 +73,27 @@ public class DrawingActivity extends Activity {
 		    	{
 			    	case 0:
 			    		//It's black.
-			    		surface.setPaint(Color.BLACK);			    		
+			    		surface.setColour(0,0,0);			    		
 			    		break;
 			    	case 1:
 			    		//It's blue.
-			    		surface.setPaint(Color.BLUE);
+			    		surface.setColour(0,0,255);
 			    		break;
 			    	case 2:
 			    		//It's green.
-			    		surface.setPaint(Color.GREEN);
+			    		surface.setColour(0,255,0);
 			    		break;
 			    	case 3:
 			    		//It's red.
-			    		surface.setPaint(Color.RED);
+			    		surface.setColour(255,0,0);
 			    		break;
 			    	default:
-			    		surface.setPaint(Color.BLACK);
+			    		surface.setColour(0,0,0);
 		    	}
 		    }
 		    @Override
 		    public void onNothingSelected(AdapterView<?> parentView) {
-		        surface.setPaint(Color.BLACK);
+		        surface.setColour(0,0,0);
 		    }
 		});
 		

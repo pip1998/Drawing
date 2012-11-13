@@ -58,7 +58,7 @@ public class DrawingSurfaceView extends View {
   protected void onDraw(Canvas canvas) {
 	  for (Shape s : lines) {
 		  SerializablePath p = s.getPath();
-		  //paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
+		  paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
 		  paint.setStrokeWidth(s.getStrokeWidth());
 		  canvas.drawPath(p,paint);
 	  }
@@ -172,12 +172,9 @@ public class DrawingSurfaceView extends View {
 	  parent.sendShapeFromDrawingSurface(s);
   }
 
-  public void setPaint(int color)
-  {	  	  	  	  
-	  line.setrgb(
-			  Color.red(color),
-			  Color.green(color),
-			  Color.blue(color));	  
-
+  public void setColour(int r, int g, int b) {	  	  	  	  
+	  currentRed = r;
+	  currentGreen = g;
+	  currentBlue = b;
   }
 }
