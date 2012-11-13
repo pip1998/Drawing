@@ -172,8 +172,12 @@ public class DrawingSurfaceView extends View {
 	  parent.sendShapeFromDrawingSurface(s);
   }
 
-  public void setPaint(int paintColor)
-  {
-	  paint.setColor(paintColor);
+  public void setPaint(int color)
+  {	  	  	  	  
+	  line.setrgb(
+			  Color.red(color),
+			  Color.green(color),
+			  Color.blue(color));	  
+
   }
 }
