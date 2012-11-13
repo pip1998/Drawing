@@ -10,13 +10,13 @@ public class Shape extends Object implements Serializable
 			protected SerializablePath shapePath;
 			protected float strokeWidth;
 	    	
-			public Shape(){
+			public Shape(int strokeWidth, int r, int g, int b){
 	    		shapePath = new SerializablePath();
 	    		shapeColour = new int[3];
-	    		shapeColour[0] = 0;
-	    		shapeColour[1] = 0;
-	    		shapeColour[2] = 0;
-	    		strokeWidth = 3;
+	    		shapeColour[0] = r;
+	    		shapeColour[1] = g;
+	    		shapeColour[2] = b;
+	    		this.strokeWidth = (float)(strokeWidth);
 	    	}
 	    	
 	    	
@@ -38,7 +38,7 @@ public class Shape extends Object implements Serializable
 	    		return shapeColour;
 	    	}
 	    	
-	    	public void setStrokeWidth(float w){
+	    	public void setStrokeWidth(int w){
 	    		strokeWidth = w;
 	    	}
 	    	

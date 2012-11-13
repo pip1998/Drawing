@@ -14,15 +14,15 @@ import android.view.View;
 
 public class DrawingSurfaceView extends View {
 
-  private static final float STROKE_WIDTH = 5f;
-
-  /** Need to track this so the dirty region can accommodate the stroke. **/
-  private static final float HALF_STROKE_WIDTH = STROKE_WIDTH / 2;
-
-  private Paint paint = new Paint();
-  
-  private Shape line = new Shape();
+   private Paint paint = new Paint();
+  private Shape line;
   private SerializablePath path = new SerializablePath();
+  
+  private int currentWidth = 1;
+  private float HALF_STROKE_WIDTH = currentWidth / 2;
+  private int currentRed = 0;
+  private int currentGreen = 0;
+  private int currentBlue = 0;
   
   private ArrayList<Shape> lines = new ArrayList<Shape>();
 
@@ -37,10 +37,8 @@ public class DrawingSurfaceView extends View {
     super(context);
 
     paint.setAntiAlias(true);
-    paint.setColor(Color.BLACK);
     paint.setStyle(Paint.Style.STROKE);
     paint.setStrokeJoin(Paint.Join.ROUND);
-    paint.setStrokeWidth(STROKE_WIDTH);
     paint.setAntiAlias(true);
   }
 
@@ -55,6 +53,8 @@ public class DrawingSurfaceView extends View {
   protected void onDraw(Canvas canvas) {
 	  for (Shape s : lines) {
 		  SerializablePath p = s.getPath();
+		  paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
+		  paint.setStrokeWidth(s.getStrokeWidth());
 		  canvas.drawPath(p,paint);
 	  }
   }
@@ -66,7 +66,7 @@ public class DrawingSurfaceView extends View {
 
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
-    	line = new Shape();
+    	line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
     	path = new SerializablePath();
     	line.setPath(path);
     	lines.add(line);
@@ -141,5 +141,21 @@ public class DrawingSurfaceView extends View {
     dirtyRect.right = Math.max(lastTouchX, eventX);
     dirtyRect.top = Math.min(lastTouchY, eventY);
     dirtyRect.bottom = Math.max(lastTouchY, eventY);
+  }
+  
+  public ArrayList<Shape> getShapes() {
+	  return lines;
+  }
+  
+  public void drawReceivedShape(ArrayList<Shape> shapes) {
+	  for (Shape s : shapes) {
+		  lines.add(s);
+		  invalidate();
+	  }
+  }
+  
+  public void setLineWidth(int width) {
+	  currentWidth = width;
+	  HALF_STROKE_WIDTH = currentWidth / 2;
   }
 }

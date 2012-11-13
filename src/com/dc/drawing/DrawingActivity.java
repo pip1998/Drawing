@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
 
 //telnet localhost 5554
@@ -47,6 +50,8 @@ public class DrawingActivity extends Activity {
 				
 		final Button client = new Button(this);
 		final Button server = new Button(this);
+		final SeekBar sizeSlider = new SeekBar(this);
+		
 		client.setText("Join Game");
 		client.setOnClickListener(new OnClickListener()
 		{
@@ -105,10 +110,10 @@ public class DrawingActivity extends Activity {
 			public void onClick(View v) {				
 				try
 				{
-					Shape toSend = new Shape();
-					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
-					shapesToSend.add(toSend);
-					mClientService.AddShapes(shapesToSend);
+//					Shape toSend = new Shape();
+//					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
+//					shapesToSend.add(toSend);
+					mClientService.AddShapes(surface.getShapes());
 
 				}
 				catch (Exception e)
@@ -116,6 +121,27 @@ public class DrawingActivity extends Activity {
 					Log.d("server_exception", e.toString());
 				}
 			}			
+		});
+		
+		/*
+		 * SeekBar for adjusting new line sizes
+		 */
+		
+		sizeSlider.setMax(50);
+        sizeSlider.setProgress(1);
+		LayoutParams lp = new LayoutParams(200, 30);
+        sizeSlider.setLayoutParams(lp);
+		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				Log.d("Activity","Setting line width to " + progress);
+				surface.setLineWidth(progress);
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
 		});
 		
 		surfaceWidgets.addView(client);		
