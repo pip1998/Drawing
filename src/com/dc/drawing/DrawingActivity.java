@@ -1,7 +1,6 @@
 package com.dc.drawing;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,6 +13,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -27,14 +27,11 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Toast;
 
 //telnet localhost 5554
 //redir add tcp:5000:6000
-
 public class DrawingActivity extends Activity {
 
 	Timer timer = new Timer();
@@ -60,10 +57,10 @@ public class DrawingActivity extends Activity {
 		
 		colorSpinner = new Spinner(this);	
 		colorArray = new ArrayList<String>();
-		colorArray.add("Red");
+		colorArray.add("Black");
 		colorArray.add("Blue");
 		colorArray.add("Green");
-		colorArray.add("Black");
+		colorArray.add("Red");
 		colorAdapter = new ArrayAdapter<String>(
 				this, 
 				android.R.layout.simple_spinner_dropdown_item, 
@@ -75,22 +72,28 @@ public class DrawingActivity extends Activity {
 		    	switch(position)
 		    	{
 			    	case 0:
-			    		//It's red.
+			    		//It's black.
+			    		surface.setPaint(Color.BLACK);			    		
 			    		break;
 			    	case 1:
 			    		//It's blue.
+			    		surface.setPaint(Color.BLUE);
 			    		break;
 			    	case 2:
 			    		//It's green.
+			    		surface.setPaint(Color.GREEN);
 			    		break;
 			    	case 3:
-			    		//It's black.
+			    		//It's red.
+			    		surface.setPaint(Color.RED);
 			    		break;
+			    	default:
+			    		surface.setPaint(Color.BLACK);
 		    	}
 		    }
 		    @Override
 		    public void onNothingSelected(AdapterView<?> parentView) {
-		        //Make it black or something.
+		        surface.setPaint(Color.BLACK);
 		    }
 		});
 		
@@ -193,8 +196,7 @@ public class DrawingActivity extends Activity {
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
 		surfaceWidgets.addView(sendShape);		
-		surfaceWidgets.addView(colorSpinner);
-		surfaceWidgets.addView(sendShape);
+		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
 		
 		surfaceLayout.addView(surface);

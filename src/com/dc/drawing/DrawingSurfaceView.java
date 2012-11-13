@@ -14,7 +14,7 @@ import android.view.View;
 
 public class DrawingSurfaceView extends View {
 
-   private Paint paint = new Paint();
+  private Paint paint = new Paint();
   private Shape line;
   private SerializablePath path = new SerializablePath();
   
@@ -38,8 +38,7 @@ public class DrawingSurfaceView extends View {
 
     paint.setAntiAlias(true);
     paint.setStyle(Paint.Style.STROKE);
-    paint.setStrokeJoin(Paint.Join.ROUND);
-    paint.setAntiAlias(true);
+    paint.setStrokeJoin(Paint.Join.ROUND);      
   }
 
   public void clear() {
@@ -53,7 +52,7 @@ public class DrawingSurfaceView extends View {
   protected void onDraw(Canvas canvas) {
 	  for (Shape s : lines) {
 		  SerializablePath p = s.getPath();
-		  paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
+		  //paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1], s.getrgb()[2]));
 		  paint.setStrokeWidth(s.getStrokeWidth());
 		  canvas.drawPath(p,paint);
 	  }
@@ -157,5 +156,10 @@ public class DrawingSurfaceView extends View {
   public void setLineWidth(int width) {
 	  currentWidth = width;
 	  HALF_STROKE_WIDTH = currentWidth / 2;
+  }
+  
+  public void setPaint(int paintColor)
+  {
+	  paint.setColor(paintColor);
   }
 }
