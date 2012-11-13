@@ -55,10 +55,9 @@ public class DrawingSurfaceView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
 	  for (Shape s : lines) {
-		  canvas.drawPath(s.getPath(),paint);
+		  SerializablePath p = s.getPath();
+		  canvas.drawPath(p,paint);
 	  }
-//    canvas.drawPath(path, paint);
-	  
   }
 
   @Override

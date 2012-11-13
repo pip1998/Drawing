@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import android.graphics.Path;
+import android.util.Log;
+
 import com.dc.drawing.SerializablePath.PathAction.PathActionType;
 
 
@@ -31,6 +33,7 @@ public class SerializablePath extends Path implements Serializable {
 	}
 
 	private void drawThisPath() {
+		Log.d("Draw!!!","DrawThisPath");
 		for (PathAction p : actions) {
 			if (p.getType().equals(PathActionType.MOVE_TO)) {
 				super.moveTo(p.getX(), p.getY());

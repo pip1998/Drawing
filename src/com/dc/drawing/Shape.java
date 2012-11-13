@@ -2,7 +2,6 @@ package com.dc.drawing;
 
 import java.io.Serializable;
 
-import android.graphics.Path;
 
 public class Shape extends Object implements Serializable  
 {
@@ -21,7 +20,7 @@ public class Shape extends Object implements Serializable
 	    	}
 	    	
 	    	
-	    	public Path getPath(){
+	    	public SerializablePath getPath(){
 	    		return shapePath;
 	    	}
 	    	
