@@ -1,11 +1,14 @@
 package com.dc.drawing;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -18,7 +21,11 @@ public class DrawingSurfaceView extends View {
   private static final float HALF_STROKE_WIDTH = STROKE_WIDTH / 2;
 
   private Paint paint = new Paint();
-  private Path path = new Path();
+  
+  private Shape line = new Shape();
+  private SerializablePath path = new SerializablePath();
+  
+  private ArrayList<Shape> lines = new ArrayList<Shape>();
 
   /**
 * Optimizes painting by invalidating the smallest possible area.
@@ -38,9 +45,6 @@ public class DrawingSurfaceView extends View {
     paint.setAntiAlias(true);
   }
 
-  /**
-* Erases the signature.
-*/
   public void clear() {
     path.reset();
 
@@ -50,7 +54,11 @@ public class DrawingSurfaceView extends View {
 
   @Override
   protected void onDraw(Canvas canvas) {
-    canvas.drawPath(path, paint);
+	  for (Shape s : lines) {
+		  canvas.drawPath(s.getPath(),paint);
+	  }
+//    canvas.drawPath(path, paint);
+	  
   }
 
   @Override
@@ -60,6 +68,11 @@ public class DrawingSurfaceView extends View {
 
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
+    	line = new Shape();
+    	path = new SerializablePath();
+    	line.setPath(path);
+    	lines.add(line);
+    	Log.d("Touch","There are now " + lines.size() + " lines in the array");
         path.moveTo(eventX, eventY);
         lastTouchX = eventX;
         lastTouchY = eventY;
