@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;	
+import java.util.ArrayList;
 
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
@@ -79,6 +80,25 @@ public class DrawingActivity extends Activity {
 					
 					//Here's how to get shapes. Dont do this here.
 					//mServerService.GetAndDeleteReceivedShapes();
+				}
+				catch (Exception e)
+				{
+					Log.d("server_exception", e.toString());
+				}
+			}			
+		});
+		
+		Button sendShap = new Button(this);
+		server.setText("Send Shape");
+		server.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v) {				
+				try
+				{
+					Shape toSend = new Shape();
+					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
+					mClientService.AddShapes(shapesToSend);
 				}
 				catch (Exception e)
 				{
