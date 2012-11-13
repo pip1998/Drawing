@@ -77,7 +77,6 @@ public class DrawingSurfaceView extends View {
     	line.setPath(path);
     	lines.add(line);
     	Log.d("Touch","There are now " + lines.size() + " lines in the array");
-    	sendDrawnShape(line);
         path.moveTo(eventX, eventY);
         lastTouchX = eventX;
         lastTouchY = eventY;
@@ -85,7 +84,6 @@ public class DrawingSurfaceView extends View {
         return true;
 
       case MotionEvent.ACTION_MOVE:
-      case MotionEvent.ACTION_UP:
         // Start tracking the dirty region.
         resetDirtyRect(eventX, eventY);
 
@@ -97,11 +95,12 @@ public class DrawingSurfaceView extends View {
           float historicalY = event.getHistoricalY(i);
           expandDirtyRect(historicalX, historicalY);
           path.lineTo(historicalX, historicalY);
-          sendDrawnShape(line);
         }
 
         // After replaying history, connect the line to the touch point.
         path.lineTo(eventX, eventY);
+        break;
+      	case MotionEvent.ACTION_UP:
         sendDrawnShape(line);
         break;
 

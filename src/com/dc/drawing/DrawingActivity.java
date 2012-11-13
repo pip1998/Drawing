@@ -209,7 +209,7 @@ public class DrawingActivity extends Activity {
 	}
 	
 	private void onTimerTick() {
-        Log.i("TimerTick", "Timer check for shapes.");
+//        Log.i("TimerTick", "Timer check for shapes.");
         try {
         	if(mServerService != null)
         	{
