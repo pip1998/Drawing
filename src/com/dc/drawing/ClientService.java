@@ -3,6 +3,7 @@ package com.dc.drawing;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -58,16 +59,14 @@ public class ClientService extends Service {
 			public void run() {
 				try {
 					Looper.prepare();
-					echoSocket = new Socket("10.0.2.2", 5000);					
-					//out = new PrintWriter(echoSocket.getOutputStream(), true);	
-					obj_out = new ObjectOutputStream(echoSocket.getOutputStream());
-		            //in = new BufferedReader(new InputStreamReader(
-		            //                            echoSocket.getInputStream()));					
 					
 					while (!stopped) {
 						//Send the shapes.
 						if(!outgoingShapes.isEmpty())
 						{
+							echoSocket = new Socket("10.0.2.2", 5000);	
+							OutputStream outStream = echoSocket.getOutputStream();
+							obj_out = new ObjectOutputStream(outStream);
 							Shape toSend = outgoingShapes.remove(0);
 							obj_out.writeObject(toSend);
 							obj_out.flush();
@@ -75,7 +74,7 @@ public class ClientService extends Service {
 					}
 					
 				} catch (Throwable e) {
-					e.printStackTrace();					
+					e.printStackTrace();
 					Log.e("ClientService", "Error in Listener", e);
 				}
 

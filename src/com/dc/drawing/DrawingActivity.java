@@ -42,7 +42,7 @@ public class DrawingActivity extends Activity {
 		super.onCreate(savedInstanceState);		
 		
 		FrameLayout surfaceLayout = new FrameLayout(this);		
-		surface = new DrawingSurfaceView(this);
+		surface = new DrawingSurfaceView(this);		
 		LinearLayout surfaceWidgets = new LinearLayout(this);
 				
 		final Button client = new Button(this);
