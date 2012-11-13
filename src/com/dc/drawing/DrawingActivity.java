@@ -1,6 +1,9 @@
 package com.dc.drawing;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
@@ -18,12 +21,15 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 //telnet localhost 5554
 //redir add tcp:5000:6000
 
 public class DrawingActivity extends Activity {
 
+	Timer timer = new Timer();
+	
 	ServerService mServerService;
 	ClientService mClientService;
 	boolean mBound = true;
@@ -39,7 +45,8 @@ public class DrawingActivity extends Activity {
 		surface = new DrawingSurfaceView(this);
 		LinearLayout surfaceWidgets = new LinearLayout(this);
 				
-		Button client = new Button(this);
+		final Button client = new Button(this);
+		final Button server = new Button(this);
 		client.setText("Join Game");
 		client.setOnClickListener(new OnClickListener()
 		{
@@ -51,6 +58,8 @@ public class DrawingActivity extends Activity {
 					bindService(clientSrv, mClientConnection, Context.BIND_AUTO_CREATE);
 					startService(clientSrv);
 					
+					server.setEnabled(false);
+					
 					//ADD SOME SHAPES LIKE THIS. NOT HERE THOUGH.
 					//mClientService.AddShapes(shapesToAdd);
 				}
@@ -61,7 +70,7 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 		
-		Button server = new Button(this);
+
 		server.setText("Host Game");
 		server.setOnClickListener(new OnClickListener()
 		{
@@ -73,9 +82,13 @@ public class DrawingActivity extends Activity {
 					bindService(serverSrv, mServerConnection, Context.BIND_AUTO_CREATE);
 					startService(serverSrv);
 					
+					client.setEnabled(false);
+					
 					//Here's how to get shapes. Dont do this here.
 					//mServerService.GetAndDeleteReceivedShapes();
-
+					
+					//Timer for checking for shapes. Don't start checking until the server service is running.		
+					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onTimerTick();}}, 0, 100L);
 				}
 				catch (Exception e)
 				{
@@ -83,10 +96,10 @@ public class DrawingActivity extends Activity {
 				}
 			}			
 		});
-		
-		Button sendShap = new Button(this);
-		server.setText("Send Shape");
-		server.setOnClickListener(new OnClickListener()
+
+		Button sendShape = new Button(this);
+		sendShape.setText("Send Shape");
+		sendShape.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(View v) {				
@@ -94,6 +107,7 @@ public class DrawingActivity extends Activity {
 				{
 					Shape toSend = new Shape();
 					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
+					shapesToSend.add(toSend);
 					mClientService.AddShapes(shapesToSend);
 
 				}
@@ -106,12 +120,29 @@ public class DrawingActivity extends Activity {
 		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
+		surfaceWidgets.addView(sendShape);
 		
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
 				
 		setContentView(surfaceLayout);
 	}
+	
+	private void onTimerTick() {
+        Log.i("TimerTick", "Timer check for shapes.");
+        try {
+        	if(mServerService != null)
+        	{
+	        	ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
+	        	if(!shapes.isEmpty())
+	        	{
+	        		Toast.makeText(getApplicationContext(), "Got a shape.", Toast.LENGTH_LONG).show();
+	        	}
+        	}
+        } catch (Throwable t) { //you should always ultimately catch all exceptions in timer tasks.
+            Log.e("TimerTick", "Timer Tick Failed.", t);            
+        }
+    }
 	
 	/** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection mClientConnection = new ServiceConnection() {
