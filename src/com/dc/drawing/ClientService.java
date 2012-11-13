@@ -93,4 +93,8 @@ public class ClientService extends Service {
 	{
 		this.outgoingShapes.addAll(shapesToAdd);
 	}
+	
+	public void addShape(Shape shapeToAdd) {
+		this.outgoingShapes.add(shapeToAdd);
+	}
 }

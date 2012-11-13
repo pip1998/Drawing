@@ -14,7 +14,9 @@ import android.view.View;
 
 public class DrawingSurfaceView extends View {
 
-   private Paint paint = new Paint();
+  private DrawingActivity parent;
+  
+  private Paint paint = new Paint();
   private Shape line;
   private SerializablePath path = new SerializablePath();
   
@@ -41,6 +43,10 @@ public class DrawingSurfaceView extends View {
     paint.setStrokeJoin(Paint.Join.ROUND);
     paint.setAntiAlias(true);
   }
+  
+  public void setParent(DrawingActivity parent) {
+	  this.parent = parent;
+  }
 
   public void clear() {
     path.reset();
@@ -57,6 +63,7 @@ public class DrawingSurfaceView extends View {
 		  paint.setStrokeWidth(s.getStrokeWidth());
 		  canvas.drawPath(p,paint);
 	  }
+	  Log.d("onDraw","Drew " + lines.size() + " lines");
   }
 
   @Override
@@ -71,6 +78,7 @@ public class DrawingSurfaceView extends View {
     	line.setPath(path);
     	lines.add(line);
     	Log.d("Touch","There are now " + lines.size() + " lines in the array");
+    	sendDrawnShape(line);
         path.moveTo(eventX, eventY);
         lastTouchX = eventX;
         lastTouchY = eventY;
@@ -90,10 +98,12 @@ public class DrawingSurfaceView extends View {
           float historicalY = event.getHistoricalY(i);
           expandDirtyRect(historicalX, historicalY);
           path.lineTo(historicalX, historicalY);
+          sendDrawnShape(line);
         }
 
         // After replaying history, connect the line to the touch point.
         path.lineTo(eventX, eventY);
+        sendDrawnShape(line);
         break;
 
       default:
@@ -157,5 +167,9 @@ public class DrawingSurfaceView extends View {
   public void setLineWidth(int width) {
 	  currentWidth = width;
 	  HALF_STROKE_WIDTH = currentWidth / 2;
+  }
+  
+  private void sendDrawnShape(Shape s) {
+	  parent.sendShapeFromDrawingSurface(s);
   }
 }

@@ -24,7 +24,6 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Toast;
 
 //telnet localhost 5554
 //redir add tcp:5000:6000
@@ -110,11 +109,7 @@ public class DrawingActivity extends Activity {
 			public void onClick(View v) {				
 				try
 				{
-//					Shape toSend = new Shape();
-//					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
-//					shapesToSend.add(toSend);
 					mClientService.AddShapes(surface.getShapes());
-
 				}
 				catch (Exception e)
 				{
@@ -153,6 +148,13 @@ public class DrawingActivity extends Activity {
 		surfaceLayout.addView(surfaceWidgets);		
 				
 		setContentView(surfaceLayout);
+		surface.setParent(this);
+	}
+	
+	public void sendShapeFromDrawingSurface(Shape s) {
+		if (mClientService!=null) {
+			mClientService.addShape(s);
+		}
 	}
 	
 	private void onTimerTick() {
