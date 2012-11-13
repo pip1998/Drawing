@@ -1,14 +1,18 @@
 package com.dc.drawing;
 
+import java.io.Serializable;
+
 import android.graphics.Path;
 
-public class Shape extends Object{
+public class Shape extends Object implements Serializable  
+{
+	private static final long serialVersionUID = -685099400005109050L;
 			private int[] shapeColour;
-			protected Path shapePath;
+			protected SerializablePath shapePath;
 			protected float strokeWidth;
 	    	
 			public Shape(){
-	    		shapePath = new Path();
+	    		shapePath = new SerializablePath();
 	    		shapeColour = new int[3];
 	    		shapeColour[0] = 0;
 	    		shapeColour[1] = 0;
@@ -21,7 +25,7 @@ public class Shape extends Object{
 	    		return shapePath;
 	    	}
 	    	
-	    	public void setPath(Path p){
+	    	public void setPath(SerializablePath p){
 	    		shapePath = p;
 	    	}
 	    	
