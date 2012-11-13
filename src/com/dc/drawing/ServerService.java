@@ -6,16 +6,34 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+
+import com.dc.drawing.ClientService.LocalClientBinder;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
 public class ServerService extends Service {
+	
+	public class LocalServerBinder extends Binder {
+		ServerService getService() {            
+            return ServerService.this;
+        }
+    }
 
+	// Binder given to clients
+    private final IBinder mBinder = new LocalServerBinder();
+	
+	private Handler handler = new Handler();
+	
+	private ArrayList<Shape> incomingShapes;
+	
 	private boolean stopped = false;
 	private Thread serverThread;
 	private ServerSocket ss;
@@ -28,6 +46,8 @@ public class ServerService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
+		incomingShapes  = new ArrayList<Shape>();
 
 		Log.d("Server.onCreate()", "The server service is starting.");
 		Log.d(getClass().getSimpleName(), "onCreate");
@@ -57,15 +77,11 @@ public class ServerService extends Service {
 						} catch (IOException e2) {
 							e2.printStackTrace();
 						}
-
-						//int method = _in.readInt();
-
-						//switch (method) {
-						// notification
-						//case 1:
-							doNotification(_in);
-							//break;
-						//}
+												
+						//Add the shapes we received to incoming shapes.
+						
+						doNotification(_in);						
+						
 					}
 				} catch (Throwable e) {
 					e.printStackTrace();
@@ -103,15 +119,23 @@ public class ServerService extends Service {
 		}
 	}
 
-	public void displayNotification(String notificationString) {
+	public void displayNotification(final String notificationString) {
 		// int icon = R.drawable.mp_warning_32x32_n;
-
-		CharSequence contentTitle = notificationString;
-		CharSequence contentText = "Hello World!";
-
-		Toast.makeText(getApplicationContext(),
-				(String) contentTitle + "\n" + contentText, Toast.LENGTH_LONG)
-				.show();
+		handler.post(new Runnable() {
+            public void run() {
+               CharSequence contentTitle = notificationString;
+        	   CharSequence contentText = "Hello World!";
+               Toast.makeText(getApplicationContext(), contentTitle + "-" + contentText, Toast.LENGTH_LONG).show();               
+               //this.run();
+            }
+         });
+	}
+	
+	public ArrayList<Shape> GetAndDeleteReceivedShapes()
+	{
+		ArrayList<Shape> shapes = new ArrayList<Shape>(this.incomingShapes);
+		this.incomingShapes.removeAll(null);
+		return shapes;
 	}
 
 }

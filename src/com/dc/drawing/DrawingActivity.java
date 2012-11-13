@@ -6,21 +6,32 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;	
 
+import com.dc.drawing.ClientService.LocalClientBinder;
+import com.dc.drawing.ServerService.LocalServerBinder;
+
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
+
+//telnet localhost 5554
+//redir add tcp:5000:6000
 
 public class DrawingActivity extends Activity {
 
+	ServerService mServerService;
+	ClientService mClientService;
+	boolean mBound = true;
+	
 	DrawingSurfaceView surface;
 
 	/** Called when the activity is first created. */
@@ -41,7 +52,11 @@ public class DrawingActivity extends Activity {
 				try
 				{
 					Intent clientSrv = new Intent(DrawingActivity.this, ClientService.class);
+					bindService(clientSrv, mClientConnection, Context.BIND_AUTO_CREATE);
 					startService(clientSrv);
+					
+					//ADD SOME SHAPES LIKE THIS. NOT HERE THOUGH.
+					//mClientService.AddShapes(shapesToAdd);
 				}
 				catch (Exception e)
 				{
@@ -59,7 +74,11 @@ public class DrawingActivity extends Activity {
 				try
 				{
 					Intent serverSrv = new Intent(DrawingActivity.this, ServerService.class);
+					bindService(serverSrv, mServerConnection, Context.BIND_AUTO_CREATE);
 					startService(serverSrv);
+					
+					//Here's how to get shapes. Dont do this here.
+					//mServerService.GetAndDeleteReceivedShapes();
 				}
 				catch (Exception e)
 				{
@@ -76,4 +95,40 @@ public class DrawingActivity extends Activity {
 				
 		setContentView(surfaceLayout);
 	}
+	
+	/** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mClientConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            LocalClientBinder binder = (LocalClientBinder) service;
+            mClientService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+    
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mServerConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            LocalServerBinder binder = (LocalServerBinder) service;
+            mServerService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 }
