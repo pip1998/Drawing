@@ -24,9 +24,12 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
 
 //telnet localhost 5554
@@ -93,6 +96,8 @@ public class DrawingActivity extends Activity {
 		
 		final Button client = new Button(this);
 		final Button server = new Button(this);
+		final SeekBar sizeSlider = new SeekBar(this);
+		
 		client.setText("Join Game");
 		client.setOnClickListener(new OnClickListener()
 		{
@@ -151,10 +156,10 @@ public class DrawingActivity extends Activity {
 			public void onClick(View v) {				
 				try
 				{
-					Shape toSend = new Shape();
-					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
-					shapesToSend.add(toSend);
-					mClientService.AddShapes(shapesToSend);
+//					Shape toSend = new Shape();
+//					ArrayList<Shape> shapesToSend = new ArrayList<Shape>();
+//					shapesToSend.add(toSend);
+					mClientService.AddShapes(surface.getShapes());
 
 				}
 				catch (Exception e)
@@ -164,10 +169,33 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 		
+		/*
+		 * SeekBar for adjusting new line sizes
+		 */
+		
+		sizeSlider.setMax(50);
+        sizeSlider.setProgress(1);
+		LayoutParams lp = new LayoutParams(200, 30);
+        sizeSlider.setLayoutParams(lp);
+		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				Log.d("Activity","Setting line width to " + progress);
+				surface.setLineWidth(progress);
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+		});
+		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
 		surfaceWidgets.addView(sendShape);		
 		surfaceWidgets.addView(colorSpinner);
+		surfaceWidgets.addView(sendShape);
+		surfaceWidgets.addView(sizeSlider);
 		
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
@@ -180,15 +208,12 @@ public class DrawingActivity extends Activity {
         try {
         	if(mServerService != null)
         	{
-	        	ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
+	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
 	        		runOnUiThread(new Runnable() {
 	        		    public void run() {
-	        		    	Toast.makeText(getApplicationContext(), 
-	        		    			"Got a shape.", 
-	        		    			Toast.LENGTH_LONG).
-	        		    		show();
+	        		    	surface.drawReceivedShape(shapes);
 	        		    }
 	        		});	        		
 	        	}
