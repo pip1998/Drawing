@@ -13,21 +13,25 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 //telnet localhost 5554
 //redir add tcp:5000:6000
-
 public class DrawingActivity extends Activity {
 
 	Timer timer = new Timer();
@@ -37,6 +41,10 @@ public class DrawingActivity extends Activity {
 	boolean mBound = true;
 	
 	DrawingSurfaceView surface;
+	
+	Spinner colorSpinner;
+	ArrayAdapter<String> colorAdapter;
+	ArrayList<String> colorArray;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -45,8 +53,50 @@ public class DrawingActivity extends Activity {
 		
 		FrameLayout surfaceLayout = new FrameLayout(this);		
 		surface = new DrawingSurfaceView(this);		
-		LinearLayout surfaceWidgets = new LinearLayout(this);
-				
+		LinearLayout surfaceWidgets = new LinearLayout(this);		
+		
+		colorSpinner = new Spinner(this);	
+		colorArray = new ArrayList<String>();
+		colorArray.add("Black");
+		colorArray.add("Blue");
+		colorArray.add("Green");
+		colorArray.add("Red");
+		colorAdapter = new ArrayAdapter<String>(
+				this, 
+				android.R.layout.simple_spinner_dropdown_item, 
+				colorArray);
+		colorSpinner.setAdapter(colorAdapter);		
+		colorSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+		    @Override
+		    public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {		    	
+		    	switch(position)
+		    	{
+			    	case 0:
+			    		//It's black.
+			    		surface.setPaint(Color.BLACK);			    		
+			    		break;
+			    	case 1:
+			    		//It's blue.
+			    		surface.setPaint(Color.BLUE);
+			    		break;
+			    	case 2:
+			    		//It's green.
+			    		surface.setPaint(Color.GREEN);
+			    		break;
+			    	case 3:
+			    		//It's red.
+			    		surface.setPaint(Color.RED);
+			    		break;
+			    	default:
+			    		surface.setPaint(Color.BLACK);
+		    	}
+		    }
+		    @Override
+		    public void onNothingSelected(AdapterView<?> parentView) {
+		        surface.setPaint(Color.BLACK);
+		    }
+		});
+		
 		final Button client = new Button(this);
 		final Button server = new Button(this);
 		final SeekBar sizeSlider = new SeekBar(this);
@@ -141,7 +191,8 @@ public class DrawingActivity extends Activity {
 		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(sendShape);
+		surfaceWidgets.addView(sendShape);		
+		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
 		
 		surfaceLayout.addView(surface);
