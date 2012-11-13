@@ -147,6 +147,7 @@ public class DrawingActivity extends Activity {
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
 		surfaceWidgets.addView(sendShape);
+		surfaceWidgets.addView(sizeSlider);
 		
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
@@ -159,15 +160,12 @@ public class DrawingActivity extends Activity {
         try {
         	if(mServerService != null)
         	{
-	        	ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
+	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
 	        		runOnUiThread(new Runnable() {
 	        		    public void run() {
-	        		    	Toast.makeText(getApplicationContext(), 
-	        		    			"Got a shape.", 
-	        		    			Toast.LENGTH_LONG).
-	        		    		show();
+	        		    	surface.drawReceivedShape(shapes);
 	        		    }
 	        		});	        		
 	        	}
