@@ -1,6 +1,7 @@
 package com.dc.drawing;
 
 import java.io.Serializable;
+import java.util.Random;
 
 
 public class Shape extends Object implements Serializable  
@@ -9,6 +10,7 @@ public class Shape extends Object implements Serializable
 			private int[] shapeColour;
 			protected SerializablePath shapePath;
 			protected float strokeWidth;
+			private long tag;
 	    	
 			public Shape(int strokeWidth, int r, int g, int b){
 	    		shapePath = new SerializablePath();
@@ -17,9 +19,9 @@ public class Shape extends Object implements Serializable
 	    		shapeColour[1] = g;
 	    		shapeColour[2] = b;
 	    		this.strokeWidth = (float)(strokeWidth);
+	    		tag = System.currentTimeMillis();
 	    	}
-	    	
-	    	
+	    		    	
 	    	public SerializablePath getPath(){
 	    		return shapePath;
 	    	}
@@ -44,5 +46,9 @@ public class Shape extends Object implements Serializable
 	    	
 	    	public float getStrokeWidth(){
 	    		return strokeWidth;
+	    	}
+	    	
+	    	public long getTag() {
+	    		return tag;
 	    	}
 }
