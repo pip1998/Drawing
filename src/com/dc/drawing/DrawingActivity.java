@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import yuku.ambilwarna.*;
-
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
@@ -44,8 +42,12 @@ public class DrawingActivity extends Activity {
 	boolean mBound = true;
 	
 	DrawingSurfaceView surface;
+	Button setEditing;
+	Button next;
+	Button prev;
+	Button del;
+	SeekBar sizeSlider;
 	
-	Spinner colorSpinner;
 	ArrayAdapter<String> colorAdapter;
 	ArrayList<String> colorArray;
 
@@ -59,16 +61,16 @@ public class DrawingActivity extends Activity {
 		final LinearLayout surfaceWidgets = new LinearLayout(this);		
 		
 				
-		colorSpinner = new Spinner(this);	
+		/*
+		 * Colour Selection
+		 */
+		final Spinner colorSpinner = new Spinner(this);	
 		colorArray = new ArrayList<String>();
 		colorArray.add("Black");
 		colorArray.add("Blue");
 		colorArray.add("Green");
 		colorArray.add("Red");
-		colorAdapter = new ArrayAdapter<String>(
-				this, 
-				android.R.layout.simple_spinner_dropdown_item, 
-				colorArray);
+		colorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, colorArray);
 		colorSpinner.setAdapter(colorAdapter);		
 		colorSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 		    @Override
@@ -106,10 +108,13 @@ public class DrawingActivity extends Activity {
 		    }
 		});
 		
+		
+		
+		/*
+		 * Client/Server mode buttons
+		 */
 		final Button client = new Button(this);
 		final Button server = new Button(this);
-		final SeekBar sizeSlider = new SeekBar(this);
-		
 		client.setText("Join Game");
 		client.setOnClickListener(new OnClickListener()
 		{
@@ -131,7 +136,6 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 		
-
 		server.setText("Host Game");
 		server.setOnClickListener(new OnClickListener()
 		{
@@ -158,12 +162,14 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 
+		
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
+		sizeSlider = new SeekBar(this);
 		sizeSlider.setMax(51);
         sizeSlider.setProgress(4);
-        surface.setLineWidth(6);
+        surface.setLineWidth(4);
 		LayoutParams lp = new LayoutParams(200, 30);
         sizeSlider.setLayoutParams(lp);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -177,7 +183,48 @@ public class DrawingActivity extends Activity {
 			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 		
-		final Button setEditing = new Button(this);
+		
+		next = new Button(this);
+		prev = new Button(this);
+		del  = new Button(this);
+		next.setEnabled(false);
+		prev.setEnabled(false);
+		del.setEnabled(false);
+		
+		next.setText("Next");
+		prev.setText("Prev");
+		del.setText("Delete");
+		
+		next.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v) {
+				surface.selectNext();
+				buttonCheck();
+			}
+		});
+		
+		prev.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v) {
+				surface.selectPrev();
+				buttonCheck();
+			}
+		});
+		
+		del.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v) {
+				surface.deleteCurrentItem();
+				buttonCheck();				
+			}
+		});
+		
+		
+		setEditing = new Button(this);
+		setEditing.setEnabled(false); //there are no lines to edit initially.
 		setEditing.setText("Edit");
 		setEditing.setOnClickListener(new OnClickListener()
 		{
@@ -193,9 +240,9 @@ public class DrawingActivity extends Activity {
 					//return UI to its previous state
 					sizeSlider.setProgress(oldSliderValue);
 					colorSpinner.setSelection(oldSelectedColour, true);
-					
-					
-					
+					next.setEnabled(false);
+					prev.setEnabled(false);
+					del.setEnabled(false);
 				} else {
 					//Begin editing mode
 					setEditing.setText("Done");
@@ -205,20 +252,20 @@ public class DrawingActivity extends Activity {
 					oldSliderValue = sizeSlider.getProgress();
 					oldSelectedColour = colorSpinner.getSelectedItemPosition();
 					
-					//adjust UI to state of the current object
-					//sizeSlider.setProgress(currentItemWidth);
-					
-					
+					//check for button stuff. Changes slider also.
+					buttonCheck();
 				}
 			}			
 		});
-		
+
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(setEditing);		
 		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
-		
+		surfaceWidgets.addView(setEditing);
+		surfaceWidgets.addView(next);
+		surfaceWidgets.addView(prev);
+		surfaceWidgets.addView(del);
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
 				
@@ -226,7 +273,39 @@ public class DrawingActivity extends Activity {
 		surface.setParent(this);
 	}
 	
+	//Check if edit/prev/next/delete buttons should be enabled or not.
+	public void buttonCheck() {
+		if (!surface.hasItems()) {
+			del.setEnabled(false);
+			next.setEnabled(false);
+			prev.setEnabled(false);
+			setEditing.setEnabled(false);
+			setEditing.setText("Edit");
+			return;
+		}
+		
+		int selectedWidth = (int)(surface.getSelectedShapeWidth());
+		if (selectedWidth>=0) {
+			sizeSlider.setProgress(selectedWidth);
+		}
+		
+		del.setEnabled(true);
+				
+		if (surface.isAtLastItem()) {
+			next.setEnabled(false);
+		} else {
+			next.setEnabled(true);
+		}
+		
+		if (surface.isAtFirstItem()) {
+			prev.setEnabled(false);
+		} else {
+			prev.setEnabled(true);
+		}
+	}
+	
 	public void sendShapeFromDrawingSurface(Shape s) {
+		setEditing.setEnabled(true);
 		if (mClientService!=null) {
 			mClientService.addShape(s);
 		}

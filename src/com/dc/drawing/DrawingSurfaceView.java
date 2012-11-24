@@ -95,7 +95,7 @@ public class DrawingSurfaceView extends View {
 			path = new SerializablePath();
 			line.setPath(path);
 			lines.add(line);
-			Log.d("Touch", "Created a new line (Tag: " + line.getTag());
+			Log.d("Touch", "Created a new line (Tag: " + line.getTag() + ")");
 			path.moveTo(eventX, eventY);
 			lastTouchX = eventX;
 			lastTouchY = eventY;
@@ -190,7 +190,7 @@ public class DrawingSurfaceView extends View {
 		int width = _width+1;
 		if (editing) {
 			int dashamount = width;
-			lines.get(lines.size() - 1).setStrokeWidth(width);
+			lines.get(selectedLineIndex).setStrokeWidth(width);
 			
 			if (dashamount<10) {
 				dashamount=10;
@@ -211,7 +211,7 @@ public class DrawingSurfaceView extends View {
 
 	public void setColour(int color) {
 		if (editing) {
-			lines.get(lines.size() - 1).setrgb(Color.red(color),Color.green(color), Color.blue(color));
+			lines.get(selectedLineIndex).setrgb(Color.red(color),Color.green(color), Color.blue(color));
 			invalidate();
 		} else {
 			currentRed = Color.red(color);
@@ -222,7 +222,7 @@ public class DrawingSurfaceView extends View {
 
 	public void setColour(int r, int g, int b) {
 		if (editing) {
-			lines.get(lines.size() - 1).setrgb(r, g, b);
+			lines.get(selectedLineIndex).setrgb(r, g, b);
 			invalidate();
 		} else {
 			currentRed = r;
@@ -234,15 +234,13 @@ public class DrawingSurfaceView extends View {
 	public void setEditing() {
 		Log.d("DEBUG", "Editing is now " + editing);
 		editing = true;
-		selectedLineIndex = lines.size() - 1; //testing for now
+		selectedLineIndex = lines.size() - 1;
 		invalidate();
 	}
 	
 	public void commitEdits() {
 		
 		//do stuff to send updated shape to friends		
-		
-		
 		selectedLineIndex = -1;
 		editing = false;
 		invalidate();
@@ -251,6 +249,78 @@ public class DrawingSurfaceView extends View {
 
 	public boolean isEditing() {
 		return this.editing;
+	}
+	
+	public float getSelectedShapeWidth() {
+		if (selectedLineIndex>-1 && selectedLineIndex<lines.size()) {
+			return lines.get(selectedLineIndex).getStrokeWidth() - 1;
+		}
+		
+		return 0;
+	}
+	
+	public void selectNext() {
+		if (selectedLineIndex < lines.size()-1) {
+			selectedLineIndex++;
+		} 
+		invalidate();
+	}
+	
+	public void selectPrev() {
+		if (selectedLineIndex > 0) {
+			selectedLineIndex--;
+		}
+		invalidate();
+	}
+	
+	public void deleteCurrentItem() {
+		if (selectedLineIndex>-1 && selectedLineIndex<lines.size()) {
+			lines.remove(selectedLineIndex);
+		}
+		
+		if (validate(selectedLineIndex-1)) {
+			selectedLineIndex--;
+		} else if (validate(selectedLineIndex+1)) {
+			selectedLineIndex++;
+		} else {
+			selectedLineIndex=-1;
+			editing=false;
+		}
+		
+		invalidate();
+	}
+	
+	private boolean validate(int index) {
+		if (index < 0 || index > lines.size()-1) { return false; }
+		return true;
+	}
+	
+	public boolean isOnlyItem() {
+		return isAtLastItem() && isAtFirstItem();
+	}
+	
+	public boolean hasItems() {
+		if (lines.size() > 0) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean isAtLastItem() {
+		if (selectedLineIndex == lines.size()-1) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean isAtFirstItem() {
+		if (selectedLineIndex == 0) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public void collisionTest() {
