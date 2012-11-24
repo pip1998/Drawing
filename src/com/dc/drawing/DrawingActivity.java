@@ -33,6 +33,10 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 telnet localhost 5554
 redir add tcp:5000:6000
 */
+/*
+telnet localhosts 5556
+redir add tcp:6000:5000
+*/
 public class DrawingActivity extends Activity {
 
 	Timer timer = new Timer();
@@ -157,6 +161,7 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 
+		/*
 		Button sendShape = new Button(this);
 		sendShape.setText("Send Shape");
 		sendShape.setOnClickListener(new OnClickListener()
@@ -169,10 +174,10 @@ public class DrawingActivity extends Activity {
 				}
 				catch (Exception e)
 				{
-					Log.d("server_exception", e.toString());
+					Log.d("send_shape_exception", e.toString());
 				}
 			}			
-		});
+		});*/
 		
 		/*
 		 * SeekBar for adjusting new line sizes
@@ -197,7 +202,7 @@ public class DrawingActivity extends Activity {
 		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(sendShape);		
+		//surfaceWidgets.addView(sendShape);		
 		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
 		
@@ -210,12 +215,29 @@ public class DrawingActivity extends Activity {
 	
 	public void sendShapeFromDrawingSurface(Shape s) {
 		if (mClientService!=null) {
-			mClientService.addShape(s);
+			mClientService.AddShapeToOutgoingList(s);
 		}
 	}
 	
 	private void onTimerTick() {
 //        Log.i("TimerTick", "Timer check for shapes.");
+		try {
+        	if(mClientService != null)
+        	{
+	        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
+	        	if(!shapes.isEmpty())
+	        	{
+	        		runOnUiThread(new Runnable() {
+	        		    public void run() {
+	        		    	surface.drawReceivedShape(shapes);
+	        		    }
+	        		});	        		
+	        	}
+        	}
+        } catch (Throwable t) { //you should always ultimately catch all exceptions in timer tasks.
+            Log.e("TimerTick", "Timer Tick Failed.", t);            
+        }
+		
         try {
         	if(mServerService != null)
         	{

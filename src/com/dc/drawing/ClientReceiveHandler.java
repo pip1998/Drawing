@@ -5,24 +5,25 @@ import java.net.Socket;
 
 import android.util.Log;
 
-public class ClientConnectionHandler implements Runnable {
+public class ClientReceiveHandler implements Runnable {
 
 	// Socket connection to handle.
 	private ClientService service;
 	private Socket socket;
 
-	public ClientConnectionHandler(ClientService service, Socket socket) {
+	public ClientReceiveHandler(ClientService service, Socket socket) {
 		this.socket = socket;
 		this.service = service;
 		Thread t = new Thread(this);
 		t.start();
 	}
-	
+
 	@Override
 	public void run() {
-		try {
+		try {			 
 			ObjectInputStream obj_in = null;
 			obj_in = new ObjectInputStream(socket.getInputStream());
+			
 			Shape receivedShape = null;
 			while ((receivedShape = (Shape) obj_in.readObject()) != null) {
 				try {
@@ -36,7 +37,6 @@ public class ClientConnectionHandler implements Runnable {
 			}
 		} catch (Exception e) {
 
-		}
-
-	}
+		}		
+	}	
 }

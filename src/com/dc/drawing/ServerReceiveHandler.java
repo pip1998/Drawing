@@ -1,17 +1,21 @@
 package com.dc.drawing;
 
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+
+import com.dc.drawing.ServerService;
+import com.dc.drawing.Shape;
 
 import android.util.Log;
 
-public class ServerConnectionHandler implements Runnable {
+public class ServerReceiveHandler implements Runnable {
 
 	// Socket connection to handle.
 	private ServerService service;
 	private Socket socket;
 
-	public ServerConnectionHandler(ServerService service, Socket socket) {
+	public ServerReceiveHandler(ServerService service, Socket socket) {
 		this.socket = socket;
 		this.service = service;
 		Thread t = new Thread(this);
@@ -23,6 +27,7 @@ public class ServerConnectionHandler implements Runnable {
 		try {
 			ObjectInputStream obj_in = null;
 			obj_in = new ObjectInputStream(socket.getInputStream());
+			
 			Shape receivedShape = null;
 			while ((receivedShape = (Shape) obj_in.readObject()) != null) {
 				try {
@@ -34,7 +39,10 @@ public class ServerConnectionHandler implements Runnable {
 					socket.close();
 				}
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+
+		}
+
 	}
 
 }
