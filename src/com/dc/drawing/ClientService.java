@@ -2,6 +2,7 @@ package com.dc.drawing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -31,12 +32,16 @@ public class ClientService extends Service {
 	private boolean stopped = false;
 	private Thread clientThread;
 	
+	public ArrayList<Shape> incomingShapes;
 	private ArrayList<Shape> outgoingShapes;
 		
-	Socket echoSocket = null;
+	Socket clientSocket = null;
+	
     PrintWriter out = null;
     ObjectOutputStream obj_out = null;
+    
     BufferedReader in = null;
+    ObjectInputStream obj_in = null;    
     
     Calendar calendar = new GregorianCalendar();
 	
@@ -49,7 +54,8 @@ public class ClientService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
-		outgoingShapes  = new ArrayList<Shape>();
+		incomingShapes = new ArrayList<Shape>();
+		outgoingShapes = new ArrayList<Shape>();
 		
 		Log.d("Client.onCreate()", "The client service is starting.");
 		Log.d(getClass().getSimpleName(), "onCreate");
@@ -60,30 +66,31 @@ public class ClientService extends Service {
 				try {
 					Looper.prepare();
 					
-					while (!stopped) {
-						//Send the shapes.
+					while (!stopped) {						
+						clientSocket = new Socket("10.0.2.2", 5000);
+						//OUTPUT Send the shapes.
 						if(!outgoingShapes.isEmpty())
-						{
-							echoSocket = new Socket("10.0.2.2", 5000);	
-							OutputStream outStream = echoSocket.getOutputStream();
+						{		
+							OutputStream outStream = clientSocket.getOutputStream();
 							obj_out = new ObjectOutputStream(outStream);
 							Shape toSend = outgoingShapes.remove(0);
 							obj_out.writeObject(toSend);
 							obj_out.flush();
 						}
-					}
-					
+						
+						new ClientConnectionHandler(ClientService.this, clientSocket);
+					}					
 				} catch (Throwable e) {
 					e.printStackTrace();
 					Log.e("ClientService", "Error in Listener", e);
 				}
 
 				try {
-					echoSocket.close();
+					clientSocket.close();
 				} catch (IOException e) {
 					Log.e(getClass().getSimpleName(), "keep it simple");
 				}
-			}
+		}
 
 		}, "Client thread");
 		clientThread.start();

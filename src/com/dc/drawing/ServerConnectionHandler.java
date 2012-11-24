@@ -5,13 +5,13 @@ import java.net.Socket;
 
 import android.util.Log;
 
-public class ConnectionHandler implements Runnable {
+public class ServerConnectionHandler implements Runnable {
 
 	// Socket connection to handle.
 	private ServerService service;
 	private Socket socket;
 
-	public ConnectionHandler(ServerService service, Socket socket) {
+	public ServerConnectionHandler(ServerService service, Socket socket) {
 		this.socket = socket;
 		this.service = service;
 		Thread t = new Thread(this);
@@ -34,10 +34,7 @@ public class ConnectionHandler implements Runnable {
 					socket.close();
 				}
 			}
-		} catch (Exception e) {
-
-		}
-
+		} catch (Exception e) {}
 	}
 
 }

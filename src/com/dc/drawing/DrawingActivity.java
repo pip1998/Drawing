@@ -29,8 +29,10 @@ import android.widget.Spinner;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-//telnet localhost 5554
-//redir add tcp:5000:6000
+/*
+telnet localhost 5554
+redir add tcp:5000:6000
+*/
 public class DrawingActivity extends Activity {
 
 	Timer timer = new Timer();

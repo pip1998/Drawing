@@ -1,6 +1,11 @@
 package com.dc.drawing;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -24,10 +29,17 @@ public class ServerService extends Service {
     private final IBinder mBinder = new LocalServerBinder();
 
 	public ArrayList<Shape> incomingShapes;
+	private ArrayList<Shape> outgoingShapes;
 	
 	private boolean stopped = false;
 	private Thread serverThread;
-	private ServerSocket ss;
+	private ServerSocket serverSocket;
+	
+	PrintWriter out = null;
+    ObjectOutputStream obj_out = null;
+    
+    BufferedReader in = null;
+    ObjectInputStream obj_in = null;    
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -39,25 +51,33 @@ public class ServerService extends Service {
 		super.onCreate();
 		
 		incomingShapes  = new ArrayList<Shape>();
+		outgoingShapes  = new ArrayList<Shape>();
 
 		Log.d("Server.onCreate()", "The server service is starting.");
 		Log.d(getClass().getSimpleName(), "onCreate");
 		
 		serverThread = new Thread(new Runnable() {
-
 			public void run() {
 				try {
 					Looper.prepare();
-					ss = new ServerSocket(6000);
-					Log.d("ip: ", ss.getInetAddress().toString()); 	
-					//ss.setReuseAddress(true);
-					//ss.setPerformancePreferences(100, 100, 1);
+					serverSocket = new ServerSocket(6000);
+					Log.d("ip: ", serverSocket.getInetAddress().toString()); 	
 					
 					while (!stopped) {							
 						try {
 							//This is blocking.
-							Socket connection = ss.accept();
-							new ConnectionHandler(ServerService.this, connection);
+							Socket serverSocketConnection = serverSocket.accept();
+							
+							if(!outgoingShapes.isEmpty())
+							{		
+								OutputStream outStream = serverSocketConnection.getOutputStream();
+								obj_out = new ObjectOutputStream(outStream);
+								Shape toSend = outgoingShapes.remove(0);
+								obj_out.writeObject(toSend);
+								obj_out.flush();
+							}
+							
+							new ServerConnectionHandler(ServerService.this, serverSocketConnection);
 						}
 						catch (IOException e)
 						{
@@ -70,7 +90,7 @@ public class ServerService extends Service {
 				}
 
 				try {
-					ss.close();
+					serverSocket.close();
 				} catch (IOException e) {
 					Log.e(getClass().getSimpleName(), "keep it simple");
 				}
@@ -85,7 +105,7 @@ public class ServerService extends Service {
 	public void onDestroy() {
 		stopped = true;
 		try {
-			ss.close();
+			serverSocket.close();
 		} catch (IOException e) {
 		}
 		serverThread.interrupt();
