@@ -19,8 +19,7 @@ public class Shape extends Object implements Serializable
 	    		shapeColour[1] = g;
 	    		shapeColour[2] = b;
 	    		this.strokeWidth = (float)(strokeWidth);
-	    		Random gen = new Random();
-	    		tag = gen.nextLong();
+	    		tag = System.currentTimeMillis();
 	    	}
 	    		    	
 	    	public SerializablePath getPath(){

@@ -186,7 +186,8 @@ public class DrawingSurfaceView extends View {
 		}
 	}
 
-	public void setLineWidth(int width) {
+	public void setLineWidth(int _width) {
+		int width = _width+1;
 		if (editing) {
 			int dashamount = width;
 			lines.get(lines.size() - 1).setStrokeWidth(width);
@@ -245,10 +246,32 @@ public class DrawingSurfaceView extends View {
 		selectedLineIndex = -1;
 		editing = false;
 		invalidate();
+//		collisionTest();
 	}
 
 	public boolean isEditing() {
 		return this.editing;
+	}
+	
+	public void collisionTest() {
+		ArrayList<Shape> testshapes = new ArrayList<Shape>();
+		int collisions=0;
+		long currentTicks = System.currentTimeMillis();
+		
+		for (int x=0;x<5000;x++) {
+			if (currentTicks==System.currentTimeMillis()) {
+				//don't do anything
+			} else {
+				Shape n = new Shape(1,0,0,0);
+				for (Shape e : testshapes) {
+					if (e.getTag()==n.getTag()) {
+						collisions++;
+					}
+				}
+			}
+			currentTicks = System.currentTimeMillis();
+		}
+		Log.d("Collisions","There were " + collisions + "collisions");
 	}
 	
 }

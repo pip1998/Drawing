@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import yuku.ambilwarna.*;
+
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
@@ -54,8 +56,9 @@ public class DrawingActivity extends Activity {
 		
 		FrameLayout surfaceLayout = new FrameLayout(this);		
 		surface = new DrawingSurfaceView(this);		
-		LinearLayout surfaceWidgets = new LinearLayout(this);		
+		final LinearLayout surfaceWidgets = new LinearLayout(this);		
 		
+				
 		colorSpinner = new Spinner(this);	
 		colorArray = new ArrayList<String>();
 		colorArray.add("Black");
@@ -155,24 +158,6 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 
-		final Button setEditing = new Button(this);
-		setEditing.setText("Edit");
-		setEditing.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(View v) {
-				
-				if (surface.isEditing()) {
-					setEditing.setText("Edit");
-					surface.commitEdits();
-				} else {
-					setEditing.setText("Done");
-					surface.setEditing();
-				}
-			}			
-		});
-		
-		
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
@@ -183,13 +168,49 @@ public class DrawingActivity extends Activity {
         sizeSlider.setLayoutParams(lp);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				Log.d("Activity","Setting line width to " + progress+1);
-				surface.setLineWidth(progress+1);
+				Log.d("Activity","Setting line width to " + progress);
+				surface.setLineWidth(progress);
 			}
 
 			public void onStartTrackingTouch(SeekBar seekBar) {}
 
 			public void onStopTrackingTouch(SeekBar seekBar) {}
+		});
+		
+		final Button setEditing = new Button(this);
+		setEditing.setText("Edit");
+		setEditing.setOnClickListener(new OnClickListener()
+		{
+			int oldSliderValue, oldSelectedColour;
+			@Override
+			public void onClick(View v) {
+				
+				if (surface.isEditing()) {
+					//End editing mode
+					setEditing.setText("Edit");
+					surface.commitEdits();
+					
+					//return UI to its previous state
+					sizeSlider.setProgress(oldSliderValue);
+					colorSpinner.setSelection(oldSelectedColour, true);
+					
+					
+					
+				} else {
+					//Begin editing mode
+					setEditing.setText("Done");
+					surface.setEditing();
+					
+					//save previous state so we can return to it
+					oldSliderValue = sizeSlider.getProgress();
+					oldSelectedColour = colorSpinner.getSelectedItemPosition();
+					
+					//adjust UI to state of the current object
+					//sizeSlider.setProgress(currentItemWidth);
+					
+					
+				}
+			}			
 		});
 		
 		surfaceWidgets.addView(client);		
