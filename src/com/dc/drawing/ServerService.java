@@ -32,8 +32,6 @@ public class ServerService extends Service {
 	private Thread serverThread;
 	private ServerSocket ss;
 	
-	private ServerReceiveHandler receiveHandler;
-	
 	ObjectOutputStream obj_out = null;
 
 	@Override
@@ -64,7 +62,7 @@ public class ServerService extends Service {
 					while (!stopped) {												
 						Socket connection = ss.accept();
 						
-						receiveHandler = new ServerReceiveHandler(ServerService.this, connection);
+						new ServerReceiveHandler(ServerService.this, connection);
 												
 						if(!outgoingShapes.isEmpty())
 						{

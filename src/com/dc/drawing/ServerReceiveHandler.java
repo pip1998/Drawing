@@ -1,7 +1,6 @@
 package com.dc.drawing;
 
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.dc.drawing.ServerService;

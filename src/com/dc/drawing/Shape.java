@@ -1,8 +1,6 @@
 package com.dc.drawing;
 
 import java.io.Serializable;
-import java.util.Random;
-
 
 public class Shape extends Object implements Serializable  
 {

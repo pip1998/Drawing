@@ -1,17 +1,13 @@
 package com.dc.drawing;
 
 import java.io.BufferedReader;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import android.app.Service;
 import android.content.Intent;
