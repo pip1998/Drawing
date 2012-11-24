@@ -120,8 +120,6 @@ public class DrawingActivity extends Activity {
 					
 					server.setEnabled(false);
 					
-					//ADD SOME SHAPES LIKE THIS. NOT HERE THOUGH.
-					//mClientService.AddShapes(shapesToAdd);
 				}
 				catch (Exception e)
 				{
@@ -157,47 +155,46 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 
-		Button sendShape = new Button(this);
-		sendShape.setText("Send Shape");
-		sendShape.setOnClickListener(new OnClickListener()
+		final Button setEditing = new Button(this);
+		setEditing.setText("Edit");
+		setEditing.setOnClickListener(new OnClickListener()
 		{
 			@Override
-			public void onClick(View v) {				
-				try
-				{
-					mClientService.AddShapes(surface.getShapes());
-				}
-				catch (Exception e)
-				{
-					Log.d("server_exception", e.toString());
+			public void onClick(View v) {
+				
+				if (surface.isEditing()) {
+					setEditing.setText("Edit");
+					surface.commitEdits();
+				} else {
+					setEditing.setText("Done");
+					surface.setEditing();
 				}
 			}			
 		});
 		
+		
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
-		
-		sizeSlider.setMax(50);
-        sizeSlider.setProgress(1);
+		sizeSlider.setMax(51);
+        sizeSlider.setProgress(4);
+        surface.setLineWidth(6);
 		LayoutParams lp = new LayoutParams(200, 30);
         sizeSlider.setLayoutParams(lp);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				Log.d("Activity","Setting line width to " + progress);
-				surface.setLineWidth(progress);
+				Log.d("Activity","Setting line width to " + progress+1);
+				surface.setLineWidth(progress+1);
 			}
 
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStartTrackingTouch(SeekBar seekBar) {}
 
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
+			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
 		
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(sendShape);		
+		surfaceWidgets.addView(setEditing);		
 		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
 		
@@ -269,4 +266,6 @@ public class DrawingActivity extends Activity {
             mBound = false;
         }
     };
+    
+    
 }
