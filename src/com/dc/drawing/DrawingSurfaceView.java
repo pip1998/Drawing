@@ -172,6 +172,13 @@ public class DrawingSurfaceView extends View {
 	  parent.sendShapeFromDrawingSurface(s);
   }
 
+  public void setColour(int color)
+  {
+	  currentRed = Color.red(color);
+	  currentGreen = Color.green(color);
+	  currentBlue = Color.blue(color);
+  }
+  
   public void setColour(int r, int g, int b) {	  	  	  	  
 	  currentRed = r;
 	  currentGreen = g;

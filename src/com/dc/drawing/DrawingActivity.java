@@ -7,7 +7,6 @@ import java.util.TimerTask;
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -73,22 +72,27 @@ public class DrawingActivity extends Activity {
 		    	{
 			    	case 0:
 			    		//It's black.
-			    		surface.setColour(0,0,0);			    		
+			    		//surface.setColour(0,0,0);		
+			    		surface.setColour(Color.BLACK);
 			    		break;
 			    	case 1:
 			    		//It's blue.
-			    		surface.setColour(0,0,255);
+			    		//surface.setColour(0,0,255);
+			    		surface.setColour(Color.BLUE);
 			    		break;
 			    	case 2:
 			    		//It's green.
-			    		surface.setColour(0,255,0);
+			    		//surface.setColour(0,255,0);
+			    		surface.setColour(Color.GREEN);
 			    		break;
 			    	case 3:
 			    		//It's red.
-			    		surface.setColour(255,0,0);
+			    		//surface.setColour(255,0,0);
+			    		surface.setColour(Color.RED);
 			    		break;
 			    	default:
-			    		surface.setColour(0,0,0);
+			    		//surface.setColour(0,0,0);
+			    		surface.setColour(Color.BLACK);
 		    	}
 		    }
 		    @Override
