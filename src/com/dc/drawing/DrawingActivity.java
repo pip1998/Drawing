@@ -7,35 +7,30 @@ import java.util.TimerTask;
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /*
 telnet localhost 5554
 redir add tcp:5000:6000
-*/
-/*
-telnet localhosts 5556
-redir add tcp:6000:5000
 */
 public class DrawingActivity extends Activity {
 
@@ -64,54 +59,6 @@ public class DrawingActivity extends Activity {
 		FrameLayout surfaceLayout = new FrameLayout(this);		
 		surface = new DrawingSurfaceView(this);		
 		final LinearLayout surfaceWidgets = new LinearLayout(this);		
-		
-				
-		/*
-		 * Colour Selection
-		 */
-		final Spinner colorSpinner = new Spinner(this);	
-		colorArray = new ArrayList<String>();
-		colorArray.add("Black");
-		colorArray.add("Blue");
-		colorArray.add("Green");
-		colorArray.add("Red");
-		colorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, colorArray);
-		colorSpinner.setAdapter(colorAdapter);		
-		colorSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
-		    @Override
-		    public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {		    	
-		    	switch(position)
-		    	{
-			    	case 0:
-			    		//It's black.
-			    		//surface.setColour(0,0,0);		
-			    		surface.setColour(Color.BLACK);
-			    		break;
-			    	case 1:
-			    		//It's blue.
-			    		//surface.setColour(0,0,255);
-			    		surface.setColour(Color.BLUE);
-			    		break;
-			    	case 2:
-			    		//It's green.
-			    		//surface.setColour(0,255,0);
-			    		surface.setColour(Color.GREEN);
-			    		break;
-			    	case 3:
-			    		//It's red.
-			    		//surface.setColour(255,0,0);
-			    		surface.setColour(Color.RED);
-			    		break;
-			    	default:
-			    		//surface.setColour(0,0,0);
-			    		surface.setColour(Color.BLACK);
-		    	}
-		    }
-		    @Override
-		    public void onNothingSelected(AdapterView<?> parentView) {
-		        surface.setColour(0,0,0);
-		    }
-		});		
 		
 		/*
 		 * Client/Server mode buttons
@@ -167,6 +114,15 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 	
+		final Button colorPicker = new Button(this);
+		colorPicker.setText("Pick Brush Color");
+		colorPicker.setOnClickListener(new OnClickListener() {
+			 @Override
+	            public void onClick(View v) {
+	                colorpicker();
+	            }
+		});
+		
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
@@ -243,7 +199,7 @@ public class DrawingActivity extends Activity {
 					
 					//return UI to its previous state
 					sizeSlider.setProgress(oldSliderValue);
-					colorSpinner.setSelection(oldSelectedColour, true);
+					//colorSpinner.setSelection(oldSelectedColour, true);
 					next.setEnabled(false);
 					prev.setEnabled(false);
 					del.setEnabled(false);
@@ -254,7 +210,7 @@ public class DrawingActivity extends Activity {
 					
 					//save previous state so we can return to it
 					oldSliderValue = sizeSlider.getProgress();
-					oldSelectedColour = colorSpinner.getSelectedItemPosition();
+					//oldSelectedColour = colorSpinner.getSelectedItemPosition();
 					
 					//check for button stuff. Changes slider also.
 					buttonCheck();
@@ -263,8 +219,8 @@ public class DrawingActivity extends Activity {
 		});
 
 		surfaceWidgets.addView(client);		
-		surfaceWidgets.addView(server);
-		surfaceWidgets.addView(colorSpinner);		
+		surfaceWidgets.addView(server);		
+		surfaceWidgets.addView(colorPicker);
 		surfaceWidgets.addView(sizeSlider);
 		surfaceWidgets.addView(setEditing);
 		surfaceWidgets.addView(next);
@@ -276,6 +232,26 @@ public class DrawingActivity extends Activity {
 		setContentView(surfaceLayout);
 		surface.setParent(this);
 	}
+	
+	public void colorpicker() {
+        //     initialColor is the initially-selected color to be shown in the rectangle on the left of the arrow.
+        //     for example, 0xff000000 is black, 0xff0000ff is blue. Please be aware of the initial 0xff which is the alpha.
+ 
+        AmbilWarnaDialog dialog = new AmbilWarnaDialog(this, surface.getColour(), new OnAmbilWarnaListener() {
+ 
+            // Executes, when user click Cancel button
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog){
+            }
+ 
+            // Executes, when user click OK button
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+            	surface.setColour(color);                
+            }
+        });
+        dialog.show();
+    }
 	
 	//Check if edit/prev/next/delete buttons should be enabled or not.
 	public void buttonCheck() {
