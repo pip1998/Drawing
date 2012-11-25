@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import junit.framework.Assert;
+
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
@@ -43,7 +45,8 @@ public class DrawingActivity extends Activity {
 	
 	ServerService mServerService;
 	ClientService mClientService;
-	boolean mBound = true;
+	boolean mClientBound = true;
+	boolean mServerBound = true;
 	
 	DrawingSurfaceView surface;
 	Button setEditing;
@@ -132,6 +135,8 @@ public class DrawingActivity extends Activity {
 					
 					server.setEnabled(false);
 					
+					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onClientTimerTick();}}, 0, 100L);
+					
 				}
 				catch (Exception e)
 				{
@@ -157,7 +162,7 @@ public class DrawingActivity extends Activity {
 					//mServerService.GetAndDeleteReceivedShapes();
 					
 					//Timer for checking for shapes. Don't start checking until the server service is running.		
-					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onTimerTick();}}, 0, 100L);
+					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onServerTimerTick();}}, 0, 100L);
 				}
 				catch (Exception e)
 				{
@@ -332,45 +337,48 @@ public class DrawingActivity extends Activity {
 	
 	public void sendShapeFromDrawingSurface(Shape s) {
 		setEditing.setEnabled(true);
+		
 		if (mClientService!=null) {
 			mClientService.AddShapeToOutgoingList(s);
 		}
+		else if (mServerService!=null) {
+			mServerService.AddShapeToOutgoingList(s);
+		}
+		else
+		{
+			Assert.fail("BREAK, CRITICAL ASTOUNDINGLY BAD ERROR");
+		}
 	}
 	
-	private void onTimerTick() {
-//        Log.i("TimerTick", "Timer check for shapes.");
+	private void onClientTimerTick() {
 		try {
-        	if(mClientService != null)
+        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
+        	if(!shapes.isEmpty())
         	{
-	        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
-	        	if(!shapes.isEmpty())
-	        	{
-	        		runOnUiThread(new Runnable() {
-	        		    public void run() {
-	        		    	surface.drawReceivedShape(shapes);
-	        		    }
-	        		});	        		
-	        	}
+        		runOnUiThread(new Runnable() {
+        		    public void run() {
+        		    	surface.drawReceivedShape(shapes);
+        		    }
+        		});	        		
         	}
-        } catch (Throwable t) { //you should always ultimately catch all exceptions in timer tasks.
-            Log.e("TimerTick", "Timer Tick Failed.", t);            
+        } catch (Throwable t) {
+            Log.e("onClientTimerTick", "Timer Tick Failed.", t);            
         }
-		
+	}
+	
+	private void onServerTimerTick() {
         try {
-        	if(mServerService != null)
+        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
+        	if(!shapes.isEmpty())
         	{
-	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
-	        	if(!shapes.isEmpty())
-	        	{
-	        		runOnUiThread(new Runnable() {
-	        		    public void run() {
-	        		    	surface.drawReceivedShape(shapes);
-	        		    }
-	        		});	        		
-	        	}
+        		runOnUiThread(new Runnable() {
+        		    public void run() {
+        		    	surface.drawReceivedShape(shapes);
+        		    }
+        		});	        		
         	}
-        } catch (Throwable t) { //you should always ultimately catch all exceptions in timer tasks.
-            Log.e("TimerTick", "Timer Tick Failed.", t);            
+        } catch (Throwable t) {
+            Log.e("onServerTimerTick", "Timer Tick Failed.", t);            
         }
     }
 	
@@ -383,12 +391,12 @@ public class DrawingActivity extends Activity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalClientBinder binder = (LocalClientBinder) service;
             mClientService = binder.getService();
-            mBound = true;
+            mClientBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            mClientBound = false;
         }
     };
     
@@ -401,12 +409,12 @@ public class DrawingActivity extends Activity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalServerBinder binder = (LocalServerBinder) service;
             mServerService = binder.getService();
-            mBound = true;
+            mServerBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            mServerBound = false;
         }
     };
     

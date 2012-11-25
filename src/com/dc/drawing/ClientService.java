@@ -1,11 +1,7 @@
 package com.dc.drawing;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -34,10 +30,7 @@ public class ClientService extends Service {
 	ArrayList<Shape> incomingShapes;
 
 	Socket clientSocket = null;
-	PrintWriter out = null;
-	ObjectOutputStream obj_out = null;
 	ObjectInputStream obj_in = null;
-	BufferedReader in = null;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -49,6 +42,7 @@ public class ClientService extends Service {
 		super.onCreate();
 
 		outgoingShapes = new ArrayList<Shape>();
+		incomingShapes = new ArrayList<Shape>();
 
 		Log.d("Client.onCreate()", "The client service is starting.");
 		Log.d(getClass().getSimpleName(), "onCreate");
@@ -61,32 +55,19 @@ public class ClientService extends Service {
 					while (!stopped) {
 						clientSocket = new Socket("10.0.2.2", 5000);
 						
-						while (!outgoingShapes.isEmpty()) {
-							OutputStream outStream = clientSocket.getOutputStream();
-							obj_out = new ObjectOutputStream(outStream);
-							Shape toSend = outgoingShapes.remove(0);
-							obj_out.writeObject(toSend);
-							obj_out.flush();							
-						}
+						new ClientSendHandler(ClientService.this, clientSocket);
 						
-						clientSocket.close();
+						ObjectInputStream obj_in = new ObjectInputStream(clientSocket.getInputStream());
 						
-						/*
-						ObjectInputStream obj_in = null;
-						obj_in = new ObjectInputStream(clientSocket.getInputStream());						
 						Shape receivedShape = null;
-						while ((receivedShape = (Shape) obj_in.readObject()) != null) {
-							try {
-								incomingShapes.add(receivedShape);
-							} catch (Exception e) {
-								Log.e("error", e.toString());
-							} finally {
-								obj_in.close();
-								clientSocket.close();
-							}
-						}*/
-						
-						
+						try {
+							receivedShape = (Shape) obj_in.readObject();
+							incomingShapes.add(receivedShape);
+						} catch (Exception e) { e.printStackTrace(); }
+						finally {
+							obj_in.close();						
+							clientSocket.close();
+						}
 					}
 				} catch (Throwable e) {
 					e.printStackTrace();
@@ -101,30 +82,9 @@ public class ClientService extends Service {
 			}
 
 		}, "Client thread");
-		clientThread.start();
-		
-		/*
-		try
-		{
-			// Send the shapes.
-			obj_in = new ObjectInputStream(inStream);																	
-			Shape received;					
-			while((received = (Shape) obj_in.readObject()) != null)
-			{
-				incomingShapes.add(received);
-			}
-		}
-		catch (EOFException eof)
-		{
-			//ignore end of file exception, just means no data to read for now.
-		}*/
+		clientThread.start();		
 	}
-
-	//TODO: Delete this when you push the button remove to production.
-	//public void AddShapes(ArrayList<Shape> shapesToAdd) {
-	//	this.outgoingShapes.addAll(shapesToAdd);
-	//s}
-
+	
 	public void AddShapeToOutgoingList(Shape shapeToAdd) {
 		this.outgoingShapes.add(shapeToAdd);
 	}

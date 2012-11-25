@@ -1,8 +1,7 @@
 package com.dc.drawing;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -32,8 +31,6 @@ public class ServerService extends Service {
 	private Thread serverThread;
 	private ServerSocket ss;
 	
-	ObjectOutputStream obj_out = null;
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
@@ -56,23 +53,24 @@ public class ServerService extends Service {
 					Looper.prepare();
 					ss = new ServerSocket(6000);
 					Log.d("ip: ", ss.getInetAddress().toString());
-					// ss.setReuseAddress(true);
-					// ss.setPerformancePreferences(100, 100, 1);
 				
 					while (!stopped) {												
 						Socket connection = ss.accept();
 						
-						new ServerReceiveHandler(ServerService.this, connection);
-												
-						if(!outgoingShapes.isEmpty())
-						{
-							//Send the shapes.
-							OutputStream outStream = connection.getOutputStream();
-							obj_out = new ObjectOutputStream(outStream);
-							Shape toSend = outgoingShapes.remove(0);
-							obj_out.writeObject(toSend);
-							obj_out.flush();
-							obj_out.reset();
+						//Handle the accepted connection. This thread should die.
+						//new ServerReceiveHandler(ServerService.this, connection);						
+						ObjectInputStream obj_in = new ObjectInputStream(connection.getInputStream());
+						
+						new ServerSendHandler(ServerService.this, connection);
+						
+						Shape receivedShape = null;
+						try {
+							receivedShape = (Shape) obj_in.readObject();
+							incomingShapes.add(receivedShape);
+						} catch (Exception e) { e.printStackTrace(); }
+						finally {
+							obj_in.close();						
+							connection.close();
 						}
 					}
 					
