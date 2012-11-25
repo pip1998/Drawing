@@ -67,7 +67,10 @@ public class ServerService extends Service {
 						try {
 							receivedShape = (Shape) obj_in.readObject();
 							incomingShapes.add(receivedShape);
-						} catch (Exception e) { e.printStackTrace(); }
+						} catch (Exception e) {
+							Log.d("ServerService", "No shape received for ReadObject. Supressing EOFException.");
+							//e.printStackTrace(); 
+						}
 						finally {
 							obj_in.close();						
 							connection.close();
@@ -76,7 +79,7 @@ public class ServerService extends Service {
 					
 				} catch (Throwable e) {
 					e.printStackTrace();
-					Log.e("Server Service", "Error in Listener", e);
+					Log.e("ServerService", "Error in Listener", e);
 				}
 
 				try {
@@ -86,7 +89,7 @@ public class ServerService extends Service {
 				}
 			}
 
-		}, "Server thread");
+		}, "ServerThread");
 		serverThread.start();
 
 	}

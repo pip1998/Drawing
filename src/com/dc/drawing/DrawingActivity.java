@@ -311,25 +311,28 @@ public class DrawingActivity extends Activity {
 	public void sendShapeFromDrawingSurface(Shape s) {
 		setEditing.setEnabled(true);
 		
-		if (mClientService!=null) {
+		if (mClientService != null) {
 			mClientService.AddShapeToOutgoingList(s);
 		}
-		else if (mServerService!=null) {
+		else if (mServerService != null) {
 			mServerService.AddShapeToOutgoingList(s);
 		}
 	}
 	
 	private void onClientTimerTick() {
 		try {
-        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
-        	if(!shapes.isEmpty())
-        	{
-        		runOnUiThread(new Runnable() {
-        		    public void run() {
-        		    	surface.drawReceivedShape(shapes);
-        		    }
-        		});	        		
-        	}
+			if(mClientBound && mClientService != null)
+			{
+	        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
+	        	if(!shapes.isEmpty())
+	        	{
+	        		runOnUiThread(new Runnable() {
+	        		    public void run() {
+	        		    	surface.drawReceivedShape(shapes);
+	        		    }
+	        		});	        		
+	        	}
+			}
         } catch (Throwable t) {
             Log.e("onClientTimerTick", "Timer Tick Failed.", t);            
         }
@@ -337,14 +340,18 @@ public class DrawingActivity extends Activity {
 	
 	private void onServerTimerTick() {
         try {
-        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
-        	if(!shapes.isEmpty())
+        	//Sometimes takes a while to finish binding the service, even though its marked bound already.
+        	if(mServerBound && mServerService != null)
         	{
-        		runOnUiThread(new Runnable() {
-        		    public void run() {
-        		    	surface.drawReceivedShape(shapes);
-        		    }
-        		});	        		
+	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
+	        	if(!shapes.isEmpty())
+	        	{
+	        		runOnUiThread(new Runnable() {
+	        		    public void run() {
+	        		    	surface.drawReceivedShape(shapes);
+	        		    }
+	        		});	        		
+        	}
         	}
         } catch (Throwable t) {
             Log.e("onServerTimerTick", "Timer Tick Failed.", t);            

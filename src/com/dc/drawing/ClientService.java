@@ -63,7 +63,10 @@ public class ClientService extends Service {
 						try {
 							receivedShape = (Shape) obj_in.readObject();
 							incomingShapes.add(receivedShape);
-						} catch (Exception e) { e.printStackTrace(); }
+						} catch (Exception e) {
+							Log.d("ClientService", "No shape received for ReadObject. Supressing EOFException.");
+							//e.printStackTrace(); 
+						}
 						finally {
 							obj_in.close();						
 							clientSocket.close();
@@ -81,7 +84,7 @@ public class ClientService extends Service {
 				}
 			}
 
-		}, "Client thread");
+		}, "ClientThread");
 		clientThread.start();		
 	}
 	
