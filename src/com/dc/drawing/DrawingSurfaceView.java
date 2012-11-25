@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,21 +19,22 @@ public class DrawingSurfaceView extends View {
 
 	private DrawingActivity parent;
 	private Paint paint = new Paint();
+	
 	private Shape line;
 	private SerializablePath path = new SerializablePath();
+	
 	private int selectedLineIndex = -1;
+	
 	private int currentWidth = 1;
 	private float HALF_STROKE_WIDTH = currentWidth / 2;
+	
 	private int currentRed = 0;
 	private int currentGreen = 0;
 	private int currentBlue = 0;
 
-	PathEffect editingEffect = new DashPathEffect(new float[] { 10, 20 }, 0);
-	PathEffect normalEffect = null;
+	private PathEffect editingEffect = new DashPathEffect(new float[] { 10, 20 }, 0);
 
 	private CopyOnWriteArrayList<Shape> lines = new CopyOnWriteArrayList<Shape>();
-	//private ArrayList<Shape> lines = new ArrayList<Shape>();
-
 	private boolean editing = false;
 
 	/**
@@ -283,8 +283,6 @@ public class DrawingSurfaceView extends View {
 	}
 	
 	public void sendEdits() {
-		
-		//do stuff to send updated shape to friends
 		Shape editedShape = lines.get(selectedLineIndex);
 		sendDrawnShape(editedShape);
 		invalidate();
@@ -371,23 +369,23 @@ public class DrawingSurfaceView extends View {
 	
 	public void collisionTest() {
 		ArrayList<Shape> testshapes = new ArrayList<Shape>();
-		int collisions=0;
+		int collisions = 0;
 		long currentTicks = System.currentTimeMillis();
-		
-		for (int x=0;x<5000;x++) {
-			if (currentTicks==System.currentTimeMillis()) {
-				//don't do anything
+
+		for (int x = 0; x < 5000; x++) {
+			if (currentTicks == System.currentTimeMillis()) {
+				// don't do anything
 			} else {
-				Shape n = new Shape(1,0,0,0);
+				Shape n = new Shape(1, 0, 0, 0);
 				for (Shape e : testshapes) {
-					if (e.getTag()==n.getTag()) {
+					if (e.getTag() == n.getTag()) {
 						collisions++;
 					}
 				}
 			}
 			currentTicks = System.currentTimeMillis();
 		}
-		Log.d("SurfaceTest","There were " + collisions + "collisions");
+		Log.d("SurfaceTest", "There were " + collisions + "collisions");
 	}
 	
 }
