@@ -10,11 +10,16 @@ import com.dc.drawing.ServerService.LocalServerBinder;
 import yuku.ambilwarna.AmbilWarnaDialog;
 import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.LightingColorFilter;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,6 +29,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -32,6 +38,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 telnet localhost 5554
 redir add tcp:5000:6000
 */
+@TargetApi(11)
 public class DrawingActivity extends Activity {
 
 	Timer timer = new Timer();
@@ -40,6 +47,8 @@ public class DrawingActivity extends Activity {
 	ClientService mClientService;
 	boolean mClientBound = true;
 	boolean mServerBound = true;
+	
+	Button colorDisplayer;
 	
 	DrawingSurfaceView surface;
 	Button setEditing;
@@ -52,6 +61,7 @@ public class DrawingActivity extends Activity {
 	ArrayList<String> colorArray;
 
 	/** Called when the activity is first created. */
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);		
@@ -123,6 +133,15 @@ public class DrawingActivity extends Activity {
 	            }
 		});
 		
+		//ColorFilter curColor = new LightingColorFilter(surface.getColour(), surface.getColour());
+		//ColorFilter curColor = new LightingColorFilter(Color.BLACK, Color.BLACK);
+		
+		colorDisplayer = new Button(this);
+		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(38, 38);
+		layoutParams.setMargins(2, 2, 2, 4);
+		colorDisplayer.setLayoutParams(layoutParams);		
+
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
@@ -144,6 +163,7 @@ public class DrawingActivity extends Activity {
 		});
 		
 		
+		/*Edit Buttons*/
 		next = new Button(this);
 		prev = new Button(this);
 		del  = new Button(this);
@@ -188,7 +208,7 @@ public class DrawingActivity extends Activity {
 		setEditing.setText("Edit");
 		setEditing.setOnClickListener(new OnClickListener()
 		{
-			int oldSliderValue, oldSelectedColour;
+			int oldSliderValue;
 			@Override
 			public void onClick(View v) {
 				
@@ -210,7 +230,6 @@ public class DrawingActivity extends Activity {
 					
 					//save previous state so we can return to it
 					oldSliderValue = sizeSlider.getProgress();
-					//oldSelectedColour = colorSpinner.getSelectedItemPosition();
 					
 					//check for button stuff. Changes slider also.
 					buttonCheck();
@@ -221,6 +240,7 @@ public class DrawingActivity extends Activity {
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);		
 		surfaceWidgets.addView(colorPicker);
+		surfaceWidgets.addView(colorDisplayer);
 		surfaceWidgets.addView(sizeSlider);
 		surfaceWidgets.addView(setEditing);
 		surfaceWidgets.addView(next);
@@ -247,7 +267,8 @@ public class DrawingActivity extends Activity {
             // Executes, when user click OK button
             @Override
             public void onOk(AmbilWarnaDialog dialog, int color) {
-            	surface.setColour(color);                
+            	surface.setColour(color);
+            	colorDisplayer.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_OVER);
             }
         });
         dialog.show();

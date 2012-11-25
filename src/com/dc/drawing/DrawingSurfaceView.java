@@ -47,7 +47,6 @@ public class DrawingSurfaceView extends View {
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeJoin(Paint.Join.ROUND);
 		paint.setStrokeCap(Paint.Cap.ROUND);
-
 	}
 
 	public void setParent(DrawingActivity parent) {
