@@ -43,7 +43,7 @@ public class HostDialogFragment extends DialogFragment {
 	               public void onClick(DialogInterface dialog, int id) {
 	            	   HostDialogFragment.this.getDialog().cancel();
 	               }
-	           });      
+	           });
 	    return builder.create();
 	}
     

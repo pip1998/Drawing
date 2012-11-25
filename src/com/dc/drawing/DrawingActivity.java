@@ -60,6 +60,8 @@ public class DrawingActivity extends Activity
 	Button del;
 	SeekBar sizeSlider;
 	
+	int currentColour;
+	
 	ArrayAdapter<String> colorAdapter;
 	ArrayList<String> colorArray;
 
@@ -125,6 +127,7 @@ public class DrawingActivity extends Activity
 		
 		colorDisplayer = new Button(this);
 		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
+		currentColour = Color.BLACK;
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(38, 38);
 		layoutParams.setMargins(2, 2, 2, 4);
 		colorDisplayer.setLayoutParams(layoutParams);		
@@ -196,6 +199,7 @@ public class DrawingActivity extends Activity
 		setEditing.setOnClickListener(new OnClickListener()
 		{
 			int oldSliderValue;
+			int oldColourValue;
 			@Override
 			public void onClick(View v) {
 				
@@ -206,7 +210,8 @@ public class DrawingActivity extends Activity
 					
 					//return UI to its previous state
 					sizeSlider.setProgress(oldSliderValue);
-					//colorSpinner.setSelection(oldSelectedColour, true);
+					colorDisplayer.getBackground().setColorFilter(oldColourValue, PorterDuff.Mode.SRC_OVER);
+					
 					next.setEnabled(false);
 					prev.setEnabled(false);
 					del.setEnabled(false);
@@ -217,6 +222,7 @@ public class DrawingActivity extends Activity
 					
 					//save previous state so we can return to it
 					oldSliderValue = sizeSlider.getProgress();
+					oldColourValue = currentColour;
 					
 					//check for button stuff. Changes slider also.
 					buttonCheck();
@@ -256,6 +262,10 @@ public class DrawingActivity extends Activity
             public void onOk(AmbilWarnaDialog dialog, int color) {
             	surface.setColour(color);
             	colorDisplayer.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_OVER);
+            	
+            	if (!surface.isEditing()) {
+            		currentColour=color;
+            	}
             }
         });
         dialog.show();
@@ -263,6 +273,10 @@ public class DrawingActivity extends Activity
 	
 	//Check if edit/prev/next/delete buttons should be enabled or not.
 	public void buttonCheck() {
+		
+		//always update to whatever the current shape colour is.
+		colorDisplayer.getBackground().setColorFilter(surface.getColour(), PorterDuff.Mode.SRC_OVER);
+		
 		if (!surface.hasItems()) {
 			del.setEnabled(false);
 			next.setEnabled(false);

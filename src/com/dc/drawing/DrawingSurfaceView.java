@@ -1,6 +1,9 @@
 package com.dc.drawing;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -29,7 +32,8 @@ public class DrawingSurfaceView extends View {
 	PathEffect editingEffect = new DashPathEffect(new float[] { 10, 20 }, 0);
 	PathEffect normalEffect = null;
 
-	private ArrayList<Shape> lines = new ArrayList<Shape>();
+	private CopyOnWriteArrayList<Shape> lines = new CopyOnWriteArrayList<Shape>();
+	//private ArrayList<Shape> lines = new ArrayList<Shape>();
 
 	private boolean editing = false;
 
@@ -62,21 +66,34 @@ public class DrawingSurfaceView extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-
-		for (int x = 0; x < lines.size(); x++) {
-			Shape s = lines.get(x);
+		
+		Iterator<Shape> it = lines.iterator();
+		int idx=0;
+		while (it.hasNext()) {
+			Shape s = it.next();
+			
+			if (s.deleteOnNextCycle()) {
+				lines.remove(s);
+				continue;
+			}
+			
 			SerializablePath p = s.getPath();
 			paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1],s.getrgb()[2]));
 			paint.setStrokeWidth(s.getStrokeWidth());
-			if (x == selectedLineIndex) {
+			
+			//are we currently editing this?
+			if (idx == selectedLineIndex) {
 				paint.setPathEffect(editingEffect);
 			} else {
 				paint.setPathEffect(null);
 			}
+			
 			canvas.drawPath(p, paint);
+			
+			idx++;
 		}
-
-		Log.d("onDraw", "Drew " + lines.size() + " lines");
+		
+		Log.d("Surface", "Drew " + lines.size() + " lines");
 	}
 
 	@Override
@@ -89,12 +106,11 @@ public class DrawingSurfaceView extends View {
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			line = new Shape(currentWidth, currentRed, currentGreen,
-					currentBlue);
+			line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
 			path = new SerializablePath();
 			line.setPath(path);
 			lines.add(line);
-			Log.d("Touch", "Created a new line (Tag: " + line.getTag() + ")");
+			Log.d("Surface", "Created a new line (Tag: " + line.getTag() + ")");
 			path.moveTo(eventX, eventY);
 			lastTouchX = eventX;
 			lastTouchY = eventY;
@@ -169,34 +185,54 @@ public class DrawingSurfaceView extends View {
 		dirtyRect.bottom = Math.max(lastTouchY, eventY);
 	}
 
-	public ArrayList<Shape> getShapes() {
+	public CopyOnWriteArrayList<Shape> getShapes() {
 		return lines;
 	}
 
 	public void drawReceivedShape(ArrayList<Shape> shapes) {
+	
 		for (Shape n : shapes) {
-			for (Shape o : lines) {
-				if (n.getTag()==o.getTag()) {
-					lines.remove(o);
+			
+			ListIterator<Shape> it = lines.listIterator();
+			boolean replaced = false;
+			int idx = 0;
+			
+			while(it.hasNext()) {
+				Shape o = it.next();
+				
+				//editing
+				if (n.getTag() == o.getTag()) {
+//					it.set(n); fuck you android
+					lines.set(idx, n);
+					replaced=true;
 				}
+				idx++;
 			}
-			lines.add(n);
+			
+			//only add the shape if it hasn't been replaced.
+			//ie only add if we are getting a new shape rather
+			//than getting an edited shape. This keeps the z-order
+			//of shapes correct
+			if (!replaced) {
+				lines.add(n);
+			}
+			
 			invalidate();
 		}
 	}
 
 	public void setLineWidth(int _width) {
 		int width = _width+1;
+		int dashamount = width;
+		
+		if (dashamount<10) {
+			dashamount=10;
+		}
+		
+		editingEffect = new DashPathEffect(new float[] { dashamount, dashamount+10 }, 0);
+		
 		if (editing) {
-			int dashamount = width;
 			lines.get(selectedLineIndex).setStrokeWidth(width);
-			
-			if (dashamount<10) {
-				dashamount=10;
-			}
-			
-			editingEffect = new DashPathEffect(new float[] { dashamount, dashamount+10 }, 0);
-			
 			invalidate();
 		} else {
 			currentWidth = width;
@@ -210,23 +246,21 @@ public class DrawingSurfaceView extends View {
 	
 	public int getColour()
 	{					
+		if (editing && validate(selectedLineIndex)) {
+			int colour[] = lines.get(selectedLineIndex).getrgb();
+			return Color.rgb(colour[0],colour[1],colour[2]);
+		}
+		
 		return Color.rgb(currentRed, currentGreen, currentBlue);
 	}
 
 	public void setColour(int color) {
+		int r = Color.red(color);
+		int g = Color.green(color);
+		int b = Color.blue(color);
+		
 		if (editing) {
-			lines.get(selectedLineIndex).setrgb(Color.red(color),Color.green(color), Color.blue(color));
-			invalidate();
-		} else {
-			currentRed = Color.red(color);
-			currentGreen = Color.green(color);
-			currentBlue = Color.blue(color);
-		}
-	}
-
-	public void setColour(int r, int g, int b) {
-		if (editing) {
-			lines.get(selectedLineIndex).setrgb(r, g, b);
+			lines.get(selectedLineIndex).setrgb(r,g,b);
 			invalidate();
 		} else {
 			currentRed = r;
@@ -236,19 +270,24 @@ public class DrawingSurfaceView extends View {
 	}
 
 	public void setEditing() {
-		Log.d("DEBUG", "Editing is now " + editing);
+		Log.d("Surface", "Editing is now " + editing);
 		editing = true;
 		selectedLineIndex = lines.size() - 1;
 		invalidate();
 	}
 	
 	public void commitEdits() {
-		
-		//do stuff to send updated shape to friends		
+		sendEdits();
 		selectedLineIndex = -1;
 		editing = false;
+	}
+	
+	public void sendEdits() {
+		
+		//do stuff to send updated shape to friends
+		Shape editedShape = lines.get(selectedLineIndex);
+		sendDrawnShape(editedShape);
 		invalidate();
-//		collisionTest();
 	}
 
 	public boolean isEditing() {
@@ -264,13 +303,14 @@ public class DrawingSurfaceView extends View {
 	}
 	
 	public void selectNext() {
+		sendEdits();
 		if (selectedLineIndex < lines.size()-1) {
 			selectedLineIndex++;
-		} 
-		invalidate();
+		}
 	}
 	
 	public void selectPrev() {
+		sendEdits();
 		if (selectedLineIndex > 0) {
 			selectedLineIndex--;
 		}
@@ -279,7 +319,9 @@ public class DrawingSurfaceView extends View {
 	
 	public void deleteCurrentItem() {
 		if (selectedLineIndex>-1 && selectedLineIndex<lines.size()) {
-			lines.remove(selectedLineIndex);
+			Shape toDelete = lines.get(selectedLineIndex);
+			toDelete.setDeleteOnNextCycle(true);
+			sendEdits();
 		}
 		
 		if (validate(selectedLineIndex-1)) {
@@ -345,7 +387,7 @@ public class DrawingSurfaceView extends View {
 			}
 			currentTicks = System.currentTimeMillis();
 		}
-		Log.d("Collisions","There were " + collisions + "collisions");
+		Log.d("SurfaceTest","There were " + collisions + "collisions");
 	}
 	
 }

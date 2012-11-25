@@ -2,6 +2,8 @@ package com.dc.drawing;
 
 import java.io.Serializable;
 
+import android.util.Log;
+
 public class Shape extends Object implements Serializable  
 {
 	private static final long serialVersionUID = -685099400005109050L;
@@ -9,6 +11,7 @@ public class Shape extends Object implements Serializable
 			protected SerializablePath shapePath;
 			protected float strokeWidth;
 			private long tag;
+			private boolean delete;
 	    	
 			public Shape(int strokeWidth, int r, int g, int b){
 	    		shapePath = new SerializablePath();
@@ -18,6 +21,7 @@ public class Shape extends Object implements Serializable
 	    		shapeColour[2] = b;
 	    		this.strokeWidth = (float)(strokeWidth);
 	    		tag = System.currentTimeMillis();
+	    		delete = false;
 	    	}
 	    		    	
 	    	public SerializablePath getPath(){
@@ -48,5 +52,14 @@ public class Shape extends Object implements Serializable
 	    	
 	    	public long getTag() {
 	    		return tag;
+	    	}
+	    	
+	    	public boolean deleteOnNextCycle() {
+	    		return delete;
+	    	}
+	    	
+	    	public void setDeleteOnNextCycle(boolean b) {
+	    		Log.d("SHAPE","Shape with tag " + tag + " deletion set to " + b);
+	    		delete = b;
 	    	}
 }
