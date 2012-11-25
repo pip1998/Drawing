@@ -27,6 +27,8 @@ public class ServerService extends Service {
 	public ArrayList<Shape> incomingShapes;
 	public ArrayList<Shape> outgoingShapes;
 
+	private int socketPort;
+	
 	private boolean stopped = false;
 	private Thread serverThread;
 	private ServerSocket ss;
@@ -90,9 +92,22 @@ public class ServerService extends Service {
 			}
 
 		}, "ServerThread");
-		serverThread.start();
+		//serverThread.start();
 
 	}
+	
+	 @Override
+	    public int onStartCommand(Intent intent, int flags, int startId) {
+			 String socketPortStr;			 
+			 socketPortStr = intent.getStringExtra("port");
+			 socketPort = Integer.parseInt(socketPortStr);
+			 
+			 Log.d("serverSocketPort", String.valueOf(socketPort));			 
+			 
+			 serverThread.start();
+			 
+			 return 0;
+	    }
 
 	@Override
 	public void onDestroy() {

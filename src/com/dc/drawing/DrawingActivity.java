@@ -13,6 +13,7 @@ import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
@@ -37,7 +39,8 @@ telnet localhost 5554
 redir add tcp:5000:6000
 */
 @TargetApi(11)
-public class DrawingActivity extends Activity {
+public class DrawingActivity extends Activity 
+	implements	HostDialogFragment.HostNoticeDialogListener, ClientDialogFragment.ClientNoticeDialogListener {
 
 	Timer timer = new Timer();
 	
@@ -45,6 +48,8 @@ public class DrawingActivity extends Activity {
 	ClientService mClientService;
 	boolean mClientBound = true;
 	boolean mServerBound = true;
+	
+	Button client, server;
 	
 	Button colorDisplayer;
 	
@@ -71,23 +76,18 @@ public class DrawingActivity extends Activity {
 		/*
 		 * Client/Server mode buttons
 		 */
-		final Button client = new Button(this);
-		final Button server = new Button(this);
-		client.setText("Join Game");
+		client = new Button(this);
+		server = new Button(this);
+		client.setText("Connect");
 		client.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(View v) {				
 				try
-				{
-					Intent clientSrv = new Intent(DrawingActivity.this, ClientService.class);
-					bindService(clientSrv, mClientConnection, Context.BIND_AUTO_CREATE);
-					startService(clientSrv);
-					
-					server.setEnabled(false);
-					
-					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onClientTimerTick();}}, 0, 100L);
-					
+				{	
+					//Dialog input is handled in functions below.
+					ClientDialogFragment clientDialog = new ClientDialogFragment();
+					clientDialog.show(getFragmentManager(), "Connect");
 				}
 				catch (Exception e)
 				{
@@ -96,24 +96,16 @@ public class DrawingActivity extends Activity {
 			}			
 		});
 		
-		server.setText("Host Game");
+		server.setText("Host");
 		server.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(View v) {				
 				try
 				{
-					Intent serverSrv = new Intent(DrawingActivity.this, ServerService.class);
-					bindService(serverSrv, mServerConnection, Context.BIND_AUTO_CREATE);
-					startService(serverSrv);
-					
-					client.setEnabled(false);
-					
-					//Here's how to get shapes. Dont do this here.
-					//mServerService.GetAndDeleteReceivedShapes();
-					
-					//Timer for checking for shapes. Don't start checking until the server service is running.		
-					timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onServerTimerTick();}}, 0, 100L);
+					//Dialog input is handled in functions below.
+					HostDialogFragment serverDialog = new HostDialogFragment();
+					serverDialog.show(getFragmentManager(), "Host");				
 				}
 				catch (Exception e)
 				{
@@ -130,9 +122,6 @@ public class DrawingActivity extends Activity {
 	                colorpicker();
 	            }
 		});
-		
-		//ColorFilter curColor = new LightingColorFilter(surface.getColour(), surface.getColour());
-		//ColorFilter curColor = new LightingColorFilter(Color.BLACK, Color.BLACK);
 		
 		colorDisplayer = new Button(this);
 		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
@@ -388,6 +377,53 @@ public class DrawingActivity extends Activity {
             mServerBound = false;
         }
     };
+
+	@Override
+	public void onClientDialogPositiveClick(DialogFragment dialog) {
+		EditText e_ip = (EditText) dialog.getDialog().findViewById(R.id.ipaddress);
+		EditText e_port = (EditText) dialog.getDialog().findViewById(R.id.port);
+		String ip = e_ip.getText().toString();
+		String port = e_port.getText().toString();
+		
+		Intent clientSrv = new Intent(DrawingActivity.this, ClientService.class);
+		clientSrv.putExtra("ip_address", ip);
+		clientSrv.putExtra("port", port);
+		bindService(clientSrv, mClientConnection, Context.BIND_AUTO_CREATE);
+		startService(clientSrv);
+		
+		client.setClickable(false);
+		server.setEnabled(false);
+		
+		timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onClientTimerTick();}}, 0, 100L);
+	}
+
+	@Override
+	public void onClientDialogNegativeClick(DialogFragment dialog) {
+		// If the user hits connect, then hits cancel in the dialog box.
+		
+	}
+
+	@Override
+	public void onHostDialogPositiveClick(DialogFragment dialog) {		
+		EditText e_port = (EditText) dialog.getDialog().findViewById(R.id.port);		
+		String port = e_port.getText().toString();
+		
+		Intent serverSrv = new Intent(DrawingActivity.this, ServerService.class);
+		serverSrv.putExtra("port", port);
+		bindService(serverSrv, mServerConnection, Context.BIND_AUTO_CREATE);
+		startService(serverSrv);
+		
+		server.setClickable(false);
+		client.setEnabled(false);		
+		
+		timer.scheduleAtFixedRate(new TimerTask(){ public void run() {onServerTimerTick();}}, 0, 100L);		
+	}
+
+	@Override
+	public void onHostDialogNegativeClick(DialogFragment dialog) {
+		//If the user hits host, then hits cancel in the dialog box.
+		
+	}
     
     
 }

@@ -29,6 +29,9 @@ public class ClientService extends Service {
 	ArrayList<Shape> outgoingShapes;
 	ArrayList<Shape> incomingShapes;
 
+	private String socketIpAddress;
+	private int socketPort;
+	
 	Socket clientSocket = null;
 	ObjectInputStream obj_in = null;
 
@@ -39,8 +42,8 @@ public class ClientService extends Service {
 
 	@Override
 	public void onCreate() {
-		super.onCreate();
-
+		super.onCreate();		
+		
 		outgoingShapes = new ArrayList<Shape>();
 		incomingShapes = new ArrayList<Shape>();
 
@@ -84,9 +87,23 @@ public class ClientService extends Service {
 				}
 			}
 
-		}, "ClientThread");
-		clientThread.start();		
+		}, "ClientThread");				
 	}
+	
+	 @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+		 String socketPortStr;
+		 socketIpAddress = intent.getStringExtra("ip_address");
+		 socketPortStr = intent.getStringExtra("port");
+		 socketPort = Integer.parseInt(socketPortStr);
+		 
+		 Log.d("socketPort", String.valueOf(socketPort));
+		 Log.d("socketIpAddress", socketIpAddress);
+		 
+		 clientThread.start();
+		 
+		 return 0;
+    }
 	
 	public void AddShapeToOutgoingList(Shape shapeToAdd) {
 		this.outgoingShapes.add(shapeToAdd);
