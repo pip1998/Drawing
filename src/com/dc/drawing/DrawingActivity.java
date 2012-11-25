@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import junit.framework.Assert;
-
 import com.dc.drawing.ClientService.LocalClientBinder;
 import com.dc.drawing.ServerService.LocalServerBinder;
 
@@ -113,9 +111,7 @@ public class DrawingActivity extends Activity {
 		    public void onNothingSelected(AdapterView<?> parentView) {
 		        surface.setColour(0,0,0);
 		    }
-		});
-		
-		
+		});		
 		
 		/*
 		 * Client/Server mode buttons
@@ -170,27 +166,7 @@ public class DrawingActivity extends Activity {
 				}
 			}			
 		});
-
-
-		/*
-		Button sendShape = new Button(this);
-		sendShape.setText("Send Shape");
-		sendShape.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(View v) {				
-				try
-				{
-					mClientService.AddShapes(surface.getShapes());
-				}
-				catch (Exception e)
-				{
-					Log.d("send_shape_exception", e.toString());
-				}
-			}			
-		});*/
-
-		
+	
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
@@ -288,9 +264,6 @@ public class DrawingActivity extends Activity {
 
 		surfaceWidgets.addView(client);		
 		surfaceWidgets.addView(server);
-
-		//surfaceWidgets.addView(sendShape);		
-
 		surfaceWidgets.addView(colorSpinner);		
 		surfaceWidgets.addView(sizeSlider);
 		surfaceWidgets.addView(setEditing);
@@ -343,10 +316,6 @@ public class DrawingActivity extends Activity {
 		}
 		else if (mServerService!=null) {
 			mServerService.AddShapeToOutgoingList(s);
-		}
-		else
-		{
-			Assert.fail("BREAK, CRITICAL ASTOUNDINGLY BAD ERROR");
 		}
 	}
 	
