@@ -36,6 +36,7 @@ public class DrawingSurfaceView extends View {
 
 	private CopyOnWriteArrayList<Shape> lines = new CopyOnWriteArrayList<Shape>();
 	private boolean editing = false;
+	private boolean moving = false;
 
 	/**
 	 * Optimizes painting by invalidating the smallest possible area.
@@ -57,13 +58,6 @@ public class DrawingSurfaceView extends View {
 		this.parent = parent;
 	}
 
-	public void clear() {
-		path.reset();
-
-		// Repaints the entire view.
-		invalidate();
-	}
-
 	@Override
 	protected void onDraw(Canvas canvas) {
 		
@@ -74,6 +68,7 @@ public class DrawingSurfaceView extends View {
 			
 			if (s.deleteOnNextCycle()) {
 				lines.remove(s);
+				parent.buttonCheck();
 				continue;
 			}
 			
@@ -92,51 +87,84 @@ public class DrawingSurfaceView extends View {
 			
 			idx++;
 		}
-		
-		Log.d("Surface", "Drew " + lines.size() + " lines");
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (editing) {
-			return true;
-		}
 		float eventX = event.getX();
 		float eventY = event.getY();
-
+				
+		if (editing&&!moving) {
+			return true;
+		}
+		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
-			path = new SerializablePath();
-			line.setPath(path);
-			lines.add(line);
-			Log.d("Surface", "Created a new line (Tag: " + line.getTag() + ")");
-			path.moveTo(eventX, eventY);
-			lastTouchX = eventX;
-			lastTouchY = eventY;
-			// There is no end point yet, so don't waste cycles invalidating.
-			return true;
-
-		case MotionEvent.ACTION_MOVE:
-			// Start tracking the dirty region.
-			resetDirtyRect(eventX, eventY);
-
-			// When the hardware tracks events faster than they are delivered,
-			// the
-			// event will contain a history of those skipped points.
-			int historySize = event.getHistorySize();
-			for (int i = 0; i < historySize; i++) {
-				float historicalX = event.getHistoricalX(i);
-				float historicalY = event.getHistoricalY(i);
-				expandDirtyRect(historicalX, historicalY);
-				path.lineTo(historicalX, historicalY);
+			if (moving) {
+				line = getCurrentShape();
+				path = line.getPath();
+			} else {
+				line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
+				path = new SerializablePath();
+				line.setPath(path);
+				lines.add(line);
+				Log.d("Surface", "Created a new line (Tag: " + line.getTag() + ")");
+				path.moveTo(eventX, eventY);
+				lastTouchX = eventX;
+				lastTouchY = eventY;
+				// There is no end point yet, so don't waste cycles
+				// invalidating.
+				return true;
 			}
+		case MotionEvent.ACTION_MOVE:
+			if (moving) {
+				if (line!=null) {
+					path.offset(eventX-lastTouchX,eventY-lastTouchY);
+					path.moveTo(eventX, eventY);
+					lastTouchX=eventX;
+					lastTouchY=eventY;
+					
+					invalidate(
+							(int)line.getBounds().left - (int)line.getStrokeWidth(),
+							(int)line.getBounds().top - (int)line.getStrokeWidth(),
+							(int)line.getBounds().right + (int)line.getStrokeWidth(),
+							(int)line.getBounds().bottom + (int)line.getStrokeWidth()
+							);
+					line.setCentre();
+					invalidate(
+							(int)line.getBounds().left - (int)line.getStrokeWidth(),
+							(int)line.getBounds().top - (int)line.getStrokeWidth(),
+							(int)line.getBounds().right + (int)line.getStrokeWidth(),
+							(int)line.getBounds().bottom + (int)line.getStrokeWidth()
+							);
+				}
+			} else {
+				// Start tracking the dirty region.
+				resetDirtyRect(eventX, eventY);
 
-			// After replaying history, connect the line to the touch point.
-			path.lineTo(eventX, eventY);
+				// When the hardware tracks events faster than they are
+				// delivered,
+				// the
+				// event will contain a history of those skipped points.
+				int historySize = event.getHistorySize();
+				for (int i = 0; i < historySize; i++) {
+					float historicalX = event.getHistoricalX(i);
+					float historicalY = event.getHistoricalY(i);
+					expandDirtyRect(historicalX, historicalY);
+					path.lineTo(historicalX, historicalY);
+				}
+
+				// After replaying history, connect the line to the touch point.
+				path.lineTo(eventX, eventY);
+			}
 			break;
 		case MotionEvent.ACTION_UP:
-			sendDrawnShape(line);
+			if (moving) {
+				
+			} else {
+				line.setCentre();
+				sendDrawnShape(line);
+			}
 			break;
 
 		default:
@@ -203,6 +231,7 @@ public class DrawingSurfaceView extends View {
 				//editing
 				if (n.getTag() == o.getTag()) {
 //					it.set(n); fuck you android
+					n.getPath().moveTo(0, 0);
 					lines.set(idx, n);
 					replaced=true;
 				}
@@ -280,10 +309,11 @@ public class DrawingSurfaceView extends View {
 		sendEdits();
 		selectedLineIndex = -1;
 		editing = false;
+		moving = false;
 	}
 	
 	public void sendEdits() {
-		Shape editedShape = lines.get(selectedLineIndex);
+		Shape editedShape = getCurrentShape();
 		sendDrawnShape(editedShape);
 		invalidate();
 	}
@@ -316,7 +346,7 @@ public class DrawingSurfaceView extends View {
 	}
 	
 	public void deleteCurrentItem() {
-		if (selectedLineIndex>-1 && selectedLineIndex<lines.size()) {
+		if (validate(selectedLineIndex)) {
 			Shape toDelete = lines.get(selectedLineIndex);
 			toDelete.setDeleteOnNextCycle(true);
 			sendEdits();
@@ -332,6 +362,14 @@ public class DrawingSurfaceView extends View {
 		}
 		
 		invalidate();
+	}
+	
+	public void setMoving() {
+		moving=!moving;
+	}
+	
+	public boolean isMoving() {
+		return moving;
 	}
 	
 	private boolean validate(int index) {
@@ -367,25 +405,10 @@ public class DrawingSurfaceView extends View {
 		return false;
 	}
 	
-	public void collisionTest() {
-		ArrayList<Shape> testshapes = new ArrayList<Shape>();
-		int collisions = 0;
-		long currentTicks = System.currentTimeMillis();
-
-		for (int x = 0; x < 5000; x++) {
-			if (currentTicks == System.currentTimeMillis()) {
-				// don't do anything
-			} else {
-				Shape n = new Shape(1, 0, 0, 0);
-				for (Shape e : testshapes) {
-					if (e.getTag() == n.getTag()) {
-						collisions++;
-					}
-				}
-			}
-			currentTicks = System.currentTimeMillis();
+	public Shape getCurrentShape() {
+		if (validate(selectedLineIndex)) {
+			return lines.get(selectedLineIndex);
 		}
-		Log.d("SurfaceTest", "There were " + collisions + "collisions");
+		return null;
 	}
-	
 }

@@ -2,7 +2,8 @@ package com.dc.drawing;
 
 import java.io.Serializable;
 
-import android.util.Log;
+import android.graphics.RectF;
+import android.os.Parcel;
 
 public class Shape extends Object implements Serializable  
 {
@@ -12,16 +13,18 @@ public class Shape extends Object implements Serializable
 			protected float strokeWidth;
 			private long tag;
 			private boolean delete;
-	    	
-			public Shape(int strokeWidth, int r, int g, int b){
+			float[] bounds;
+			
+			public Shape(float strokeWidth, int r, int g, int b){
 	    		shapePath = new SerializablePath();
 	    		shapeColour = new int[3];
 	    		shapeColour[0] = r;
 	    		shapeColour[1] = g;
 	    		shapeColour[2] = b;
-	    		this.strokeWidth = (float)(strokeWidth);
+	    		this.strokeWidth = strokeWidth;
 	    		tag = System.currentTimeMillis();
 	    		delete = false;
+	    		bounds = new float[4];
 	    	}
 	    		    	
 	    	public SerializablePath getPath(){
@@ -42,7 +45,11 @@ public class Shape extends Object implements Serializable
 	    		return shapeColour;
 	    	}
 	    	
-	    	public void setStrokeWidth(int w){
+	    	public void setStrokeWidth(int w) {
+	    		strokeWidth = w;
+	    	}
+	    	
+	    	public void setStrokeWidth(float w) {
 	    		strokeWidth = w;
 	    	}
 	    	
@@ -59,7 +66,19 @@ public class Shape extends Object implements Serializable
 	    	}
 	    	
 	    	public void setDeleteOnNextCycle(boolean b) {
-	    		Log.d("SHAPE","Shape with tag " + tag + " deletion set to " + b);
 	    		delete = b;
+	    	}
+	    	
+	    	public void setCentre() {
+	    		RectF b = new RectF();
+	    		shapePath.computeBounds(b, true);
+	    		bounds[0]=b.left;
+	    		bounds[1]=b.top;
+	    		bounds[2]=b.right;
+	    		bounds[3]=b.bottom;
+	    	}
+	    	
+	    	public RectF getBounds() {
+	    		return new RectF(bounds[0],bounds[1],bounds[2],bounds[3]);
 	    	}
 }

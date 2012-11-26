@@ -37,7 +37,7 @@ public class ClientDialogFragment extends DialogFragment {
 	               public void onClick(DialogInterface dialog, int id) {
 	            	   ClientDialogFragment.this.getDialog().cancel();
 	               }
-	           });      
+	           });
 	    
 	    return builder.create();
 	}

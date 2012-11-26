@@ -58,6 +58,7 @@ public class DrawingActivity extends Activity
 	Button next;
 	Button prev;
 	Button del;
+	Button move;
 	SeekBar sizeSlider;
 	
 	int currentColour;
@@ -157,13 +158,16 @@ public class DrawingActivity extends Activity
 		next = new Button(this);
 		prev = new Button(this);
 		del  = new Button(this);
+		move = new Button(this);
 		next.setEnabled(false);
 		prev.setEnabled(false);
 		del.setEnabled(false);
+		move.setEnabled(false);
 		
 		next.setText("Next");
 		prev.setText("Prev");
 		del.setText("Delete");
+		move.setText("Move");
 		
 		next.setOnClickListener(new OnClickListener()
 		{
@@ -192,6 +196,14 @@ public class DrawingActivity extends Activity
 			}
 		});
 		
+		move.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v) {
+				surface.setMoving();
+				buttonCheck();
+			}
+		});		
 		
 		setEditing = new Button(this);
 		setEditing.setEnabled(false); //there are no lines to edit initially.
@@ -215,6 +227,8 @@ public class DrawingActivity extends Activity
 					next.setEnabled(false);
 					prev.setEnabled(false);
 					del.setEnabled(false);
+					move.setEnabled(false);
+					move.setText("Move");
 				} else {
 					//Begin editing mode
 					setEditing.setText("Done");
@@ -239,6 +253,7 @@ public class DrawingActivity extends Activity
 		surfaceWidgets.addView(next);
 		surfaceWidgets.addView(prev);
 		surfaceWidgets.addView(del);
+		surfaceWidgets.addView(move);
 		surfaceLayout.addView(surface);
 		surfaceLayout.addView(surfaceWidgets);		
 				
@@ -273,16 +288,19 @@ public class DrawingActivity extends Activity
 	
 	//Check if edit/prev/next/delete buttons should be enabled or not.
 	public void buttonCheck() {
-		
+		Log.d("Activity","Checking buttons");
 		//always update to whatever the current shape colour is.
 		colorDisplayer.getBackground().setColorFilter(surface.getColour(), PorterDuff.Mode.SRC_OVER);
 		
 		if (!surface.hasItems()) {
+			Log.d("Activity","There are no items");
 			del.setEnabled(false);
 			next.setEnabled(false);
 			prev.setEnabled(false);
 			setEditing.setEnabled(false);
 			setEditing.setText("Edit");
+			move.setEnabled(false);
+			move.setText("Move");
 			return;
 		}
 		
@@ -292,6 +310,7 @@ public class DrawingActivity extends Activity
 		}
 		
 		del.setEnabled(true);
+		move.setEnabled(true);
 				
 		if (surface.isAtLastItem()) {
 			next.setEnabled(false);
@@ -303,6 +322,12 @@ public class DrawingActivity extends Activity
 			prev.setEnabled(false);
 		} else {
 			prev.setEnabled(true);
+		}
+		
+		if (surface.isMoving()) {
+			move.setText("Stop");
+		} else {
+			move.setText("Move");
 		}
 	}
 	
