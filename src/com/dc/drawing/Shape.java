@@ -14,6 +14,7 @@ public class Shape extends Object implements Serializable
 			private long tag;
 			private boolean delete;
 			float[] bounds;
+			float totalOffsetX, totalOffsetY;
 			
 			public Shape(float strokeWidth, int r, int g, int b){
 	    		shapePath = new SerializablePath();
@@ -25,6 +26,8 @@ public class Shape extends Object implements Serializable
 	    		tag = System.currentTimeMillis();
 	    		delete = false;
 	    		bounds = new float[4];
+	    		totalOffsetX = 0;
+	    		totalOffsetY = 0;
 	    	}
 	    		    	
 	    	public SerializablePath getPath(){
@@ -76,6 +79,19 @@ public class Shape extends Object implements Serializable
 	    		bounds[1]=b.top;
 	    		bounds[2]=b.right;
 	    		bounds[3]=b.bottom;
+	    	}
+	    	
+	    	public void setOffset(float x, float y) {
+	    		totalOffsetX += x;
+	    		totalOffsetY += y;
+	    	}
+	    		    	
+	    	public float getTotalOffsetX() {
+	    		return totalOffsetX;
+	    	}
+	    	
+	    	public float getTotalOffsetY() {
+	    		return totalOffsetY;
 	    	}
 	    	
 	    	public RectF getBounds() {

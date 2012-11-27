@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PathEffect;
 import android.graphics.RectF;
 import android.util.Log;
@@ -60,7 +61,6 @@ public class DrawingSurfaceView extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		
 		Iterator<Shape> it = lines.iterator();
 		int idx=0;
 		while (it.hasNext()) {
@@ -83,8 +83,8 @@ public class DrawingSurfaceView extends View {
 				paint.setPathEffect(null);
 			}
 			
-			canvas.drawPath(p, paint);
 			
+			canvas.drawPath(p, paint);
 			idx++;
 		}
 	}
@@ -103,6 +103,9 @@ public class DrawingSurfaceView extends View {
 			if (moving) {
 				line = getCurrentShape();
 				path = line.getPath();
+				line.setCentre();
+				lastTouchX = eventX;
+				lastTouchY = eventY;
 			} else {
 				line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
 				path = new SerializablePath();
@@ -119,11 +122,15 @@ public class DrawingSurfaceView extends View {
 		case MotionEvent.ACTION_MOVE:
 			if (moving) {
 				if (line!=null) {
+					float diffX = eventX-lastTouchX;
+					float diffY = eventY-lastTouchY;
+					Log.d("DEBUG","Setting offset: " + diffX + "," + diffY);
+					line.setOffset(eventX-lastTouchX, eventY-lastTouchY);
 					path.offset(eventX-lastTouchX,eventY-lastTouchY);
 					path.moveTo(eventX, eventY);
 					lastTouchX=eventX;
 					lastTouchY=eventY;
-					
+
 					invalidate(
 							(int)line.getBounds().left - (int)line.getStrokeWidth(),
 							(int)line.getBounds().top - (int)line.getStrokeWidth(),
@@ -219,20 +226,20 @@ public class DrawingSurfaceView extends View {
 
 	public void drawReceivedShape(ArrayList<Shape> shapes) {
 	
-		for (Shape n : shapes) {
+		for (Shape newShape : shapes) {
 			
 			ListIterator<Shape> it = lines.listIterator();
 			boolean replaced = false;
 			int idx = 0;
 			
 			while(it.hasNext()) {
-				Shape o = it.next();
-				
+				Shape oldShape = it.next();
 				//editing
-				if (n.getTag() == o.getTag()) {
-//					it.set(n); fuck you android
-					n.getPath().moveTo(0, 0);
-					lines.set(idx, n);
+				if (newShape.getTag() == oldShape.getTag()) {
+//					it.set(newShape); fuck you android
+					newShape.getPath().offset(newShape.getTotalOffsetX(), newShape.getTotalOffsetY());
+					newShape.getPath().moveTo(1, 1);
+					lines.set(idx, newShape);
 					replaced=true;
 				}
 				idx++;
@@ -243,7 +250,7 @@ public class DrawingSurfaceView extends View {
 			//than getting an edited shape. This keeps the z-order
 			//of shapes correct
 			if (!replaced) {
-				lines.add(n);
+				lines.add(newShape);
 			}
 			
 			invalidate();
@@ -323,8 +330,8 @@ public class DrawingSurfaceView extends View {
 	}
 	
 	public float getSelectedShapeWidth() {
-		if (selectedLineIndex>-1 && selectedLineIndex<lines.size()) {
-			return lines.get(selectedLineIndex).getStrokeWidth() - 1;
+		if (validate(selectedLineIndex)) {
+			return getCurrentShape().getStrokeWidth() - 1;
 		}
 		
 		return 0;
@@ -347,7 +354,7 @@ public class DrawingSurfaceView extends View {
 	
 	public void deleteCurrentItem() {
 		if (validate(selectedLineIndex)) {
-			Shape toDelete = lines.get(selectedLineIndex);
+			Shape toDelete = getCurrentShape();
 			toDelete.setDeleteOnNextCycle(true);
 			sendEdits();
 		}
