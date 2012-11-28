@@ -2,9 +2,13 @@ package com.dc.drawing;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import android.app.Service;
 import android.content.Intent;
@@ -29,6 +33,8 @@ public class ServerService extends Service {
 
 	private int socketPort;
 	
+	public String ipAddress;
+	
 	private boolean stopped = false;
 	private Thread serverThread;
 	private ServerSocket ss;
@@ -37,7 +43,7 @@ public class ServerService extends Service {
 	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
-
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -49,16 +55,15 @@ public class ServerService extends Service {
 		Log.d(getClass().getSimpleName(), "onCreate");
 
 		serverThread = new Thread(new Runnable() {
-
 			public void run() {
 				try {
 					Looper.prepare();
 					ss = new ServerSocket(6000);
 					Log.d("ip: ", ss.getInetAddress().toString());
-				
+					ipAddress = getLocalIpAddress();
+		
 					while (!stopped) {												
-						Socket connection = ss.accept();
-						
+						Socket connection = ss.accept();						
 						//Handle the accepted connection. This thread should die.
 						//new ServerReceiveHandler(ServerService.this, connection);						
 						ObjectInputStream obj_in = new ObjectInputStream(connection.getInputStream());
@@ -131,5 +136,23 @@ public class ServerService extends Service {
 		ArrayList<Shape> shapes = new ArrayList<Shape>(this.incomingShapes);
 		this.incomingShapes.clear();
 		return shapes;
+	}
+	
+	//Do voo-doo to get the, apparently, 'real' ip address.
+	public String getLocalIpAddress() {
+	    try {
+	        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+	            NetworkInterface intf = en.nextElement();
+	            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+	                InetAddress inetAddress = enumIpAddr.nextElement();
+	                if (!inetAddress.isLoopbackAddress()) {
+	                    return inetAddress.getHostAddress().toString();
+	                }
+	            }
+	        }
+	    } catch (SocketException ex) {
+	        Log.e("get-real-ip-sucks", ex.toString());
+	    }
+	    return null;
 	}
 }

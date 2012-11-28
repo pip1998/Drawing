@@ -12,8 +12,8 @@ import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.DialogFragment;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -33,13 +33,14 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Toast;
 
 /*
 telnet localhost 5554
 redir add tcp:5000:6000
 */
 @TargetApi(11)
-public class DrawingActivity extends Activity 
+public class DrawingActivity extends FragmentActivity 
 	implements	HostDialogFragment.HostNoticeDialogListener, ClientDialogFragment.ClientNoticeDialogListener {
 
 	Timer timer = new Timer();
@@ -90,7 +91,7 @@ public class DrawingActivity extends Activity
 				{	
 					//Dialog input is handled in functions below.
 					ClientDialogFragment clientDialog = new ClientDialogFragment();
-					clientDialog.show(getFragmentManager(), "Connect");
+					clientDialog.show(getSupportFragmentManager(), "Connect");
 				}
 				catch (Exception e)
 				{
@@ -108,7 +109,7 @@ public class DrawingActivity extends Activity
 				{
 					//Dialog input is handled in functions below.
 					HostDialogFragment serverDialog = new HostDialogFragment();
-					serverDialog.show(getFragmentManager(), "Host");				
+					serverDialog.show(getSupportFragmentManager(), "Host");				
 				}
 				catch (Exception e)
 				{
@@ -366,6 +367,13 @@ public class DrawingActivity extends Activity
         	//Sometimes takes a while to finish binding the service, even though its marked bound already.
         	if(mServerBound && mServerService != null)
         	{
+        		runOnUiThread(new Runnable() {
+        			public void run () {
+        			Toast.makeText(DrawingActivity.this, mServerService.ipAddress,
+            				Toast.LENGTH_SHORT).show();
+        			}
+        		});
+        		
 	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
@@ -460,9 +468,7 @@ public class DrawingActivity extends Activity
 
 	@Override
 	public void onHostDialogNegativeClick(DialogFragment dialog) {
-		//If the user hits host, then hits cancel in the dialog box.
+		// TODO Auto-generated method stub
 		
-	}
-    
-    
+	}    
 }
