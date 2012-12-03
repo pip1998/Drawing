@@ -12,8 +12,8 @@ import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.DialogFragment;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -28,18 +28,19 @@ import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
+import android.widget.Toast;
 
 /*
 telnet localhost 5554
 redir add tcp:5000:6000
 */
 @TargetApi(11)
-public class DrawingActivity extends Activity 
+public class DrawingActivity extends FragmentActivity 
 	implements	HostDialogFragment.HostNoticeDialogListener, ClientDialogFragment.ClientNoticeDialogListener {
 
 	Timer timer = new Timer();
@@ -72,9 +73,21 @@ public class DrawingActivity extends Activity
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);		
 		
-		FrameLayout surfaceLayout = new FrameLayout(this);		
+		LinearLayout surfaceLayout = new LinearLayout(this);
+		surfaceLayout.setOrientation(LinearLayout.HORIZONTAL);
 		surface = new DrawingSurfaceView(this);		
-		final LinearLayout surfaceWidgets = new LinearLayout(this);		
+		final LinearLayout surfaceWidgets = new LinearLayout(this);	
+		surfaceWidgets.setOrientation(LinearLayout.VERTICAL);
+		surfaceWidgets.setBackgroundColor(Color.GRAY);
+		
+		LinearLayout pickColorLayout = new LinearLayout(this);
+		pickColorLayout.setOrientation(LinearLayout.HORIZONTAL);
+		
+		LinearLayout networkLayout = new LinearLayout(this);
+		networkLayout.setOrientation(LinearLayout.HORIZONTAL);
+		
+		LinearLayout prevNextLayout = new LinearLayout(this);
+		prevNextLayout.setOrientation(LinearLayout.HORIZONTAL);
 		
 		/*
 		 * Client/Server mode buttons
@@ -90,7 +103,7 @@ public class DrawingActivity extends Activity
 				{	
 					//Dialog input is handled in functions below.
 					ClientDialogFragment clientDialog = new ClientDialogFragment();
-					clientDialog.show(getFragmentManager(), "Connect");
+					clientDialog.show(getSupportFragmentManager(), "Connect");
 				}
 				catch (Exception e)
 				{
@@ -108,7 +121,7 @@ public class DrawingActivity extends Activity
 				{
 					//Dialog input is handled in functions below.
 					HostDialogFragment serverDialog = new HostDialogFragment();
-					serverDialog.show(getFragmentManager(), "Host");				
+					serverDialog.show(getSupportFragmentManager(), "Host");				
 				}
 				catch (Exception e)
 				{
@@ -129,10 +142,13 @@ public class DrawingActivity extends Activity
 		colorDisplayer = new Button(this);
 		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
 		currentColour = Color.BLACK;
-		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(38, 38);
-		layoutParams.setMargins(2, 2, 2, 4);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(42, 42);
+		layoutParams.setMargins(2, 5, 2, 2);
 		colorDisplayer.setLayoutParams(layoutParams);		
 
+		final TextView drawWidthLabel = new TextView(this);
+		drawWidthLabel.setText("Set line width:");
+		
 		/*
 		 * SeekBar for adjusting new line sizes
 		 */
@@ -140,8 +156,6 @@ public class DrawingActivity extends Activity
 		sizeSlider.setMax(51);
         sizeSlider.setProgress(4);
         surface.setLineWidth(4);
-		LayoutParams lp = new LayoutParams(200, 30);
-        sizeSlider.setLayoutParams(lp);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				Log.d("Activity","Setting line width to " + progress);
@@ -244,18 +258,43 @@ public class DrawingActivity extends Activity
 			}			
 		});
 
-		surfaceWidgets.addView(client);		
-		surfaceWidgets.addView(server);		
-		surfaceWidgets.addView(colorPicker);
-		surfaceWidgets.addView(colorDisplayer);
-		surfaceWidgets.addView(sizeSlider);
+		networkLayout.addView(server,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+                        LayoutParams.WRAP_CONTENT,
+                        1));
+		networkLayout.addView(client,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+                        LayoutParams.WRAP_CONTENT,
+                        1));		
+		surfaceWidgets.addView(networkLayout);		
+		
+		pickColorLayout.addView(colorDisplayer);
+		pickColorLayout.addView(colorPicker);		
+		surfaceWidgets.addView(pickColorLayout);
+		
+		surfaceWidgets.addView(drawWidthLabel);
+		surfaceWidgets.addView(sizeSlider,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,
+						LayoutParams.WRAP_CONTENT, 0));
 		surfaceWidgets.addView(setEditing);
-		surfaceWidgets.addView(next);
-		surfaceWidgets.addView(prev);
+		
+		prevNextLayout.addView(prev,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+                        LayoutParams.WRAP_CONTENT,
+                        1));
+		prevNextLayout.addView(next,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+                        LayoutParams.WRAP_CONTENT,
+                        1));		
+		surfaceWidgets.addView(prevNextLayout);
+		
 		surfaceWidgets.addView(del);
 		surfaceWidgets.addView(move);
-		surfaceLayout.addView(surface);
-		surfaceLayout.addView(surfaceWidgets);		
+				
+		surfaceLayout.addView(surfaceWidgets, 
+				new LinearLayout.LayoutParams(150, LayoutParams.FILL_PARENT));
+		surfaceLayout.addView(surface,
+				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 				
 		setContentView(surfaceLayout);
 		surface.setParent(this);
@@ -366,6 +405,13 @@ public class DrawingActivity extends Activity
         	//Sometimes takes a while to finish binding the service, even though its marked bound already.
         	if(mServerBound && mServerService != null)
         	{
+        		runOnUiThread(new Runnable() {
+        			public void run () {
+        			Toast.makeText(DrawingActivity.this, mServerService.ipAddress,
+            				Toast.LENGTH_SHORT).show();
+        			}
+        		});
+        		
 	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
@@ -460,9 +506,7 @@ public class DrawingActivity extends Activity
 
 	@Override
 	public void onHostDialogNegativeClick(DialogFragment dialog) {
-		//If the user hits host, then hits cancel in the dialog box.
+		// TODO Auto-generated method stub
 		
-	}
-    
-    
+	}    
 }

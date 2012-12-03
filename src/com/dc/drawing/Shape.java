@@ -1,9 +1,7 @@
 package com.dc.drawing;
 
 import java.io.Serializable;
-
 import android.graphics.RectF;
-import android.os.Parcel;
 
 public class Shape extends Object implements Serializable  
 {
