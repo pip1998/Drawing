@@ -39,6 +39,9 @@ public class DrawingSurfaceView extends View {
 	private boolean editing = false;
 	private boolean moving = false;
 
+	
+	private int updateCount;
+	
 	/**
 	 * Optimizes painting by invalidating the smallest possible area.
 	 */
@@ -100,6 +103,7 @@ public class DrawingSurfaceView extends View {
 		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+			updateCount=0;
 			if (moving) {
 				line = getCurrentShape();
 				path = line.getPath();
@@ -115,11 +119,11 @@ public class DrawingSurfaceView extends View {
 				path.moveTo(eventX, eventY);
 				lastTouchX = eventX;
 				lastTouchY = eventY;
-				// There is no end point yet, so don't waste cycles
-				// invalidating.
 				return true;
 			}
 		case MotionEvent.ACTION_MOVE:
+			updateCount++;
+			Log.d("Surface","Updated " + updateCount + " times");
 			if (moving) {
 				if (line!=null) {
 					float diffX = eventX-lastTouchX;
@@ -163,9 +167,14 @@ public class DrawingSurfaceView extends View {
 
 				// After replaying history, connect the line to the touch point.
 				path.lineTo(eventX, eventY);
+				if (updateCount>=15) {
+					sendDrawnShape(line);
+					updateCount = 0;
+				}
 			}
 			break;
 		case MotionEvent.ACTION_UP:
+			updateCount = 0;
 			if (moving) {
 				
 			} else {
