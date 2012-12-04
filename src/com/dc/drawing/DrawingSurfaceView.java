@@ -28,6 +28,7 @@ public class DrawingSurfaceView extends View {
 	private int currentWidth = 5;
 	private float HALF_STROKE_WIDTH = currentWidth / 2;
 	
+	private int currentAlpha = 255;
 	private int currentRed = 0;
 	private int currentGreen = 0;
 	private int currentBlue = 0;
@@ -36,10 +37,6 @@ public class DrawingSurfaceView extends View {
 
 	private CopyOnWriteArrayList<Shape> lines = new CopyOnWriteArrayList<Shape>();
 	private boolean editing = false;
-	//private boolean moving = false;
-
-	
-	private int updateCount;
 	
 	/**
 	 * Optimizes painting by invalidating the smallest possible area.
@@ -75,12 +72,13 @@ public class DrawingSurfaceView extends View {
 			}
 			
 			SerializablePath p = s.getPath();
-			paint.setColor(Color.rgb(s.getrgb()[0], s.getrgb()[1],s.getrgb()[2]));
+			paint.setColor(Color.argb(s.getargb()[0], s.getargb()[1], s.getargb()[2],s.getargb()[3]));
 			paint.setStrokeWidth(s.getStrokeWidth());
 			
 			//are we currently editing this?
 			if (idx == selectedLineIndex) {
 				paint.setPathEffect(editingEffect);
+				paint.setColor(Color.argb(255, s.getargb()[1], s.getargb()[2],s.getargb()[3]));
 			} else {
 				paint.setPathEffect(null);
 			}
@@ -102,7 +100,6 @@ public class DrawingSurfaceView extends View {
 		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			updateCount=0;
 //			if (moving) {
 			if (editing) {
 				line = getCurrentShape();
@@ -111,7 +108,7 @@ public class DrawingSurfaceView extends View {
 				lastTouchX = eventX;
 				lastTouchY = eventY;
 			} else {
-				line = new Shape(currentWidth, currentRed, currentGreen, currentBlue);
+				line = new Shape(currentWidth, currentAlpha, currentRed, currentGreen, currentBlue);
 				path = new SerializablePath();
 				line.setPath(path);
 				lines.add(line);
@@ -122,8 +119,6 @@ public class DrawingSurfaceView extends View {
 				return true;
 			}
 		case MotionEvent.ACTION_MOVE:
-			updateCount++;
-			Log.d("Surface","Updated " + updateCount + " times");
 			if (editing) {
 //			if (moving) {
 				if (line!=null) {
@@ -168,16 +163,10 @@ public class DrawingSurfaceView extends View {
 
 				// After replaying history, connect the line to the touch point.
 				path.lineTo(eventX, eventY);
-				if (updateCount>=15) {
-					sendDrawnShape(line);
-					updateCount = 0;
-				}
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			updateCount = 0;
 			if (editing) {
-			//if (moving) {
 				sendDrawnShape(line);
 			} else {
 				line.setCentre();
@@ -280,6 +269,7 @@ public class DrawingSurfaceView extends View {
 		
 		if (editing) {
 			lines.get(selectedLineIndex).setStrokeWidth(width);
+			sendDrawnShape(line);
 			invalidate();
 		} else {
 			currentWidth = width;
@@ -294,35 +284,48 @@ public class DrawingSurfaceView extends View {
 	public int getColour()
 	{					
 		if (editing && validate(selectedLineIndex)) {
-			int colour[] = lines.get(selectedLineIndex).getrgb();
-			return Color.rgb(colour[0],colour[1],colour[2]);
+			int colour[] = lines.get(selectedLineIndex).getargb();
+			return Color.argb(colour[0],colour[1],colour[2],colour[3]);
 		}
 		
-		return Color.rgb(currentRed, currentGreen, currentBlue);
+		return Color.argb(currentAlpha, currentRed, currentGreen, currentBlue);
 	}
 
 	public void setColour(int color) {
+		int alpha = Color.alpha(color);
 		int r = Color.red(color);
 		int g = Color.green(color);
 		int b = Color.blue(color);
 		
 		if (editing) {
-			lines.get(selectedLineIndex).setrgb(r,g,b);
+			sendDrawnShape(line);
+			line.setargb(128,r,g,b);
 			invalidate();
 		} else {
+			currentAlpha = alpha;
 			currentRed = r;
 			currentGreen = g;
 			currentBlue = b;
 		}
 	}
 
-	public void setEditing() {
+	public void setEditing(boolean alreadyEditing) {
 		Log.d("Surface", "Editing is now " + editing);
 		editing = true;
-		selectedLineIndex = lines.size() - 1;
+		
+		if (!alreadyEditing) {
+			selectedLineIndex = lines.size() - 1;
+		}
+		
+		line = getCurrentShape();
+		int _r = line.getargb()[1];
+		int _g = line.getargb()[2];
+		int _b = line.getargb()[3];
+		line.setargb(128, _r, _g, _b);
+		sendDrawnShape(line);
 		invalidate();
 	}
-	
+		
 	public void commitEdits() {
 		sendEdits();
 		selectedLineIndex = -1;
@@ -332,6 +335,7 @@ public class DrawingSurfaceView extends View {
 	
 	public void sendEdits() {
 		Shape editedShape = getCurrentShape();
+		editedShape.setargb(255, editedShape.getargb()[1], editedShape.getargb()[2], editedShape.getargb()[3]);
 		sendDrawnShape(editedShape);
 		invalidate();
 	}
@@ -353,6 +357,8 @@ public class DrawingSurfaceView extends View {
 		if (selectedLineIndex < lines.size()-1) {
 			selectedLineIndex++;
 		}
+		setEditing(true);
+		invalidate();
 	}
 	
 	public void selectPrev() {
@@ -360,6 +366,7 @@ public class DrawingSurfaceView extends View {
 		if (selectedLineIndex > 0) {
 			selectedLineIndex--;
 		}
+		setEditing(true);
 		invalidate();
 	}
 	
@@ -369,7 +376,7 @@ public class DrawingSurfaceView extends View {
 			toDelete.setDeleteOnNextCycle(true);
 			sendEdits();
 		}
-		
+		setEditing(true);
 		if(lines.size() == 2)
 		{
 			//Handle this edge case.
@@ -382,7 +389,7 @@ public class DrawingSurfaceView extends View {
 			selectedLineIndex=-1;
 			editing=false;
 		}
-		
+		setEditing(true);
 		invalidate();
 	}
 	

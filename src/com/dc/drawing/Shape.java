@@ -14,12 +14,13 @@ public class Shape extends Object implements Serializable
 			float[] bounds;
 			float totalOffsetX, totalOffsetY;
 			
-			public Shape(float strokeWidth, int r, int g, int b){
+			public Shape(float strokeWidth, int alpha, int r, int g, int b){
 	    		shapePath = new SerializablePath();
-	    		shapeColour = new int[3];
-	    		shapeColour[0] = r;
-	    		shapeColour[1] = g;
-	    		shapeColour[2] = b;
+	    		shapeColour = new int[4];
+	    		shapeColour[0] = alpha;
+	    		shapeColour[1] = r;
+	    		shapeColour[2] = g;
+	    		shapeColour[3] = b;
 	    		this.strokeWidth = strokeWidth;
 	    		tag = System.currentTimeMillis();
 	    		delete = false;
@@ -36,13 +37,14 @@ public class Shape extends Object implements Serializable
 	    		shapePath = p;
 	    	}
 	    	
-	    	public void setrgb(int red, int green, int blue){
-	    		shapeColour[0] = red;
-	    		shapeColour[1] = green;
-	    		shapeColour[2] = blue;
+	    	public void setargb(int alpha, int red, int green, int blue){
+	    		shapeColour[0] = alpha;
+	    		shapeColour[1] = red;
+	    		shapeColour[2] = green;
+	    		shapeColour[3] = blue;
 	    	}
 	    	
-	    	public int[] getrgb(){
+	    	public int[] getargb(){
 	    		return shapeColour;
 	    	}
 	    	

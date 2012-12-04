@@ -245,7 +245,7 @@ public class DrawingActivity extends FragmentActivity
 				} else {
 					//Begin editing mode
 					setEditing.setText("Done");
-					surface.setEditing();
+					surface.setEditing(false);
 					
 					//save previous state so we can return to it
 					oldSliderValue = sizeSlider.getProgress();
