@@ -57,7 +57,10 @@ public class DrawingActivity extends FragmentActivity
 	Button prev;
 	Button del;
 	TextView canMoveObjects;
+	
 	SeekBar sizeSlider;
+	int oldSliderValue;
+	int oldColourValue;
 	
 	int currentColour;
 	
@@ -215,9 +218,7 @@ public class DrawingActivity extends FragmentActivity
 		setEditing.setEnabled(false); //there are no lines to edit initially.
 		setEditing.setText("Edit");
 		setEditing.setOnClickListener(new OnClickListener()
-		{
-			int oldSliderValue;
-			int oldColourValue;
+		{			
 			@Override
 			public void onClick(View v) {
 				
@@ -250,7 +251,8 @@ public class DrawingActivity extends FragmentActivity
 				}				
 			}			
 		});
-
+		
+		//Build the control panel view.
 		networkLayout.addView(server,
 				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,   
                         LayoutParams.WRAP_CONTENT,
@@ -297,6 +299,11 @@ public class DrawingActivity extends FragmentActivity
 		setEditObjectsVisible(false);
 	}
 	
+	/**
+	 * Make all the "edit" controls appear and disappear when appropriate,
+	 * with this function.
+	 * @param isVisible: whether to make the controls visible or not.
+	 */
 	public void setEditObjectsVisible(Boolean isVisible)
 	{		
 		if(isVisible)
@@ -349,9 +356,6 @@ public class DrawingActivity extends FragmentActivity
 		
 		if (!surface.hasItems()) {
 			Log.d("Activity","There are no items");
-			del.setEnabled(false);
-			next.setEnabled(false);
-			prev.setEnabled(false);
 			setEditing.setEnabled(false);
 			setEditing.setText("Edit");
 			setEditObjectsVisible(false);
@@ -364,8 +368,7 @@ public class DrawingActivity extends FragmentActivity
 		}
 		
 		del.setEnabled(true);
-		//setEditObjectsVisible(true);
-				
+		
 		if (surface.isAtLastItem()) {
 			next.setEnabled(false);
 		} else {
