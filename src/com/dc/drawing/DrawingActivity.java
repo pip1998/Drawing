@@ -52,7 +52,7 @@ public class DrawingActivity extends FragmentActivity
 	Button colorDisplayer;
 	
 	DrawingSurfaceView surface;
-	Button setEditing;
+	public Button setEditing;
 	Button next;
 	Button prev;
 	Button del;
@@ -397,14 +397,16 @@ public class DrawingActivity extends FragmentActivity
 		try {
 			if(mClientBound && mClientService != null)
 			{
+				//
 	        	final ArrayList<Shape> shapes = mClientService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
 	        	{
 	        		runOnUiThread(new Runnable() {
-	        		    public void run() {
+	        		    public void run() {	        		    	
 	        		    	surface.drawReceivedShape(shapes);
+	        		    	setEditing.setEnabled(true);
 	        		    }
-	        		});	        		
+	        		});
 	        	}
 			}
         } catch (Throwable t) {
@@ -417,14 +419,7 @@ public class DrawingActivity extends FragmentActivity
         	//Sometimes takes a while to finish binding the service, even though its marked bound already.
         	if(mServerBound && mServerService != null)
         	{
-        		/*
-        		runOnUiThread(new Runnable() {
-        			public void run () {
-        			Toast.makeText(DrawingActivity.this, mServerService.ipAddress,
-            				Toast.LENGTH_SHORT).show();
-        			}
-        		});
-        		*/
+        		//buttonCheck();
         		
 	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
@@ -432,9 +427,10 @@ public class DrawingActivity extends FragmentActivity
 	        		runOnUiThread(new Runnable() {
 	        		    public void run() {
 	        		    	surface.drawReceivedShape(shapes);
+	        		    	setEditing.setEnabled(true);
 	        		    }
 	        		});	        		
-        	}
+	        	}
         	}
         } catch (Throwable t) {
             Log.e("onServerTimerTick", "Timer Tick Failed.", t);            
