@@ -25,7 +25,7 @@ public class DrawingSurfaceView extends View {
 	
 	private int selectedLineIndex = -1;
 	
-	private int currentWidth = 1;
+	private int currentWidth = 5;
 	private float HALF_STROKE_WIDTH = currentWidth / 2;
 	
 	private int currentRed = 0;
@@ -36,7 +36,7 @@ public class DrawingSurfaceView extends View {
 
 	private CopyOnWriteArrayList<Shape> lines = new CopyOnWriteArrayList<Shape>();
 	private boolean editing = false;
-	private boolean moving = false;
+	//private boolean moving = false;
 
 	
 	private int updateCount;
@@ -96,14 +96,15 @@ public class DrawingSurfaceView extends View {
 		float eventX = event.getX();
 		float eventY = event.getY();
 				
-		if (editing&&!moving) {
-			return true;
-		}
+//		if (editing&&!moving) {
+//			return true;
+//		}
 		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			updateCount=0;
-			if (moving) {
+//			if (moving) {
+			if (editing) {
 				line = getCurrentShape();
 				path = line.getPath();
 				line.setCentre();
@@ -123,7 +124,8 @@ public class DrawingSurfaceView extends View {
 		case MotionEvent.ACTION_MOVE:
 			updateCount++;
 			Log.d("Surface","Updated " + updateCount + " times");
-			if (moving) {
+			if (editing) {
+//			if (moving) {
 				if (line!=null) {
 					float diffX = eventX-lastTouchX;
 					float diffY = eventY-lastTouchY;
@@ -174,8 +176,9 @@ public class DrawingSurfaceView extends View {
 			break;
 		case MotionEvent.ACTION_UP:
 			updateCount = 0;
-			if (moving) {
-				
+			if (editing) {
+			//if (moving) {
+				sendDrawnShape(line);
 			} else {
 				line.setCentre();
 				sendDrawnShape(line);
@@ -266,7 +269,7 @@ public class DrawingSurfaceView extends View {
 	}
 
 	public void setLineWidth(int _width) {
-		int width = _width+1;
+		int width = _width+2;
 		int dashamount = width;
 		
 		if (dashamount<10) {
@@ -324,7 +327,7 @@ public class DrawingSurfaceView extends View {
 		sendEdits();
 		selectedLineIndex = -1;
 		editing = false;
-		moving = false;
+		//moving = false;
 	}
 	
 	public void sendEdits() {
@@ -380,12 +383,12 @@ public class DrawingSurfaceView extends View {
 	}
 	
 	public void setMoving() {
-		moving=!moving;
+//		moving=!moving;
 	}
 	
-	public boolean isMoving() {
-		return moving;
-	}
+//	public boolean isMoving() {
+//		return moving;
+//	}
 	
 	private boolean validate(int index) {
 		if (index < 0 || index > lines.size()-1) { return false; }

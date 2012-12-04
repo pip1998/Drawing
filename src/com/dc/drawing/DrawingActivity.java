@@ -59,7 +59,7 @@ public class DrawingActivity extends FragmentActivity
 	Button next;
 	Button prev;
 	Button del;
-	Button move;
+//	Button move;
 	SeekBar sizeSlider;
 	
 	int currentColour;
@@ -153,9 +153,9 @@ public class DrawingActivity extends FragmentActivity
 		 * SeekBar for adjusting new line sizes
 		 */
 		sizeSlider = new SeekBar(this);
-		sizeSlider.setMax(51);
-        sizeSlider.setProgress(4);
-        surface.setLineWidth(4);
+		sizeSlider.setMax(50);
+        sizeSlider.setProgress(3);
+        surface.setLineWidth(3);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				Log.d("Activity","Setting line width to " + progress);
@@ -172,16 +172,16 @@ public class DrawingActivity extends FragmentActivity
 		next = new Button(this);
 		prev = new Button(this);
 		del  = new Button(this);
-		move = new Button(this);
+//		move = new Button(this);
 		next.setEnabled(false);
 		prev.setEnabled(false);
 		del.setEnabled(false);
-		move.setEnabled(false);
+//		move.setEnabled(false);
 		
 		next.setText("Next");
 		prev.setText("Prev");
 		del.setText("Delete");
-		move.setText("Move");
+//		move.setText("Move");
 		
 		next.setOnClickListener(new OnClickListener()
 		{
@@ -210,14 +210,14 @@ public class DrawingActivity extends FragmentActivity
 			}
 		});
 		
-		move.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(View v) {
-				surface.setMoving();
-				buttonCheck();
-			}
-		});		
+//		move.setOnClickListener(new OnClickListener()
+//		{
+//			@Override
+//			public void onClick(View v) {
+//				surface.setMoving();
+//				buttonCheck();
+//			}
+//		});		
 		
 		setEditing = new Button(this);
 		setEditing.setEnabled(false); //there are no lines to edit initially.
@@ -241,8 +241,8 @@ public class DrawingActivity extends FragmentActivity
 					next.setEnabled(false);
 					prev.setEnabled(false);
 					del.setEnabled(false);
-					move.setEnabled(false);
-					move.setText("Move");
+//					move.setEnabled(false);
+//					move.setText("Move");
 				} else {
 					//Begin editing mode
 					setEditing.setText("Done");
@@ -289,8 +289,8 @@ public class DrawingActivity extends FragmentActivity
 		surfaceWidgets.addView(prevNextLayout);
 		
 		surfaceWidgets.addView(del);
-		surfaceWidgets.addView(move);
-				
+//		surfaceWidgets.addView(move);
+		
 		surfaceLayout.addView(surfaceWidgets, 
 				new LinearLayout.LayoutParams(150, LayoutParams.FILL_PARENT));
 		surfaceLayout.addView(surface,
@@ -338,8 +338,8 @@ public class DrawingActivity extends FragmentActivity
 			prev.setEnabled(false);
 			setEditing.setEnabled(false);
 			setEditing.setText("Edit");
-			move.setEnabled(false);
-			move.setText("Move");
+//			move.setEnabled(false);
+//			move.setText("Move");
 			return;
 		}
 		
@@ -349,7 +349,7 @@ public class DrawingActivity extends FragmentActivity
 		}
 		
 		del.setEnabled(true);
-		move.setEnabled(true);
+//		move.setEnabled(true);
 				
 		if (surface.isAtLastItem()) {
 			next.setEnabled(false);
@@ -363,11 +363,11 @@ public class DrawingActivity extends FragmentActivity
 			prev.setEnabled(true);
 		}
 		
-		if (surface.isMoving()) {
-			move.setText("Stop");
-		} else {
-			move.setText("Move");
-		}
+//		if (surface.isMoving()) {
+//			move.setText("Stop");
+//		} else {
+//			move.setText("Move");
+//		}
 	}
 	
 	public void sendShapeFromDrawingSurface(Shape s) {
