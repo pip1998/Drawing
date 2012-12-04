@@ -131,7 +131,7 @@ public class DrawingActivity extends FragmentActivity
 		});
 	
 		final Button colorPicker = new Button(this);
-		colorPicker.setText("Pick Brush Color");
+		colorPicker.setText("Pick Brush Color");		
 		colorPicker.setOnClickListener(new OnClickListener() {
 			 @Override
 	            public void onClick(View v) {
@@ -143,15 +143,21 @@ public class DrawingActivity extends FragmentActivity
 		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
 		currentColour = Color.BLACK;
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(42, 42);
-		layoutParams.setMargins(3, 5, 2, 2);
-		colorDisplayer.setLayoutParams(layoutParams);		
+		layoutParams.setMargins(3, 4, 2, 2);
+		colorDisplayer.setLayoutParams(layoutParams);
+		colorDisplayer.setOnClickListener(new OnClickListener() {
+			 @Override
+	            public void onClick(View v) {
+	                colorpicker();
+	            }
+		});
 
 		canMoveObjects = new TextView(this);
 		canMoveObjects.setText("Click and drag the canvas to move the selected object.");
 		canMoveObjects.setPadding(4, 0, 0, 0);
 				
 		final TextView drawWidthLabel = new TextView(this);
-		drawWidthLabel.setPadding(4, 0, 0, 0);
+		drawWidthLabel.setPadding(4, 5, 0, 0);
 		drawWidthLabel.setText("Set line width:");
 		
 		/*
@@ -160,7 +166,7 @@ public class DrawingActivity extends FragmentActivity
 		sizeSlider = new SeekBar(this);
 		sizeSlider.setMax(50);
         sizeSlider.setProgress(3);
-        sizeSlider.setPadding(3, 0, 3, 0);
+        sizeSlider.setPadding(3, 5, 3, 5);
         surface.setLineWidth(3);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
