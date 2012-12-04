@@ -370,7 +370,11 @@ public class DrawingSurfaceView extends View {
 			sendEdits();
 		}
 		
-		if (validate(selectedLineIndex-1)) {
+		if(lines.size() == 2)
+		{
+			//Handle this edge case.
+			selectedLineIndex=0;			
+		} else if (validate(selectedLineIndex-1)) {
 			selectedLineIndex--;
 		} else if (validate(selectedLineIndex+1)) {
 			selectedLineIndex++;
