@@ -405,12 +405,14 @@ public class DrawingActivity extends FragmentActivity
         	//Sometimes takes a while to finish binding the service, even though its marked bound already.
         	if(mServerBound && mServerService != null)
         	{
+        		/*
         		runOnUiThread(new Runnable() {
         			public void run () {
         			Toast.makeText(DrawingActivity.this, mServerService.ipAddress,
             				Toast.LENGTH_SHORT).show();
         			}
         		});
+        		*/
         		
 	        	final ArrayList<Shape> shapes = mServerService.GetAndDeleteReceivedShapes();
 	        	if(!shapes.isEmpty())
