@@ -56,7 +56,7 @@ public class ClientService extends Service {
 					Looper.prepare();
 					
 					while (!stopped) {
-						clientSocket = new Socket("10.0.2.2", 5000);
+						clientSocket = new Socket(socketIpAddress, socketPort);
 						
 						new ClientSendHandler(ClientService.this, clientSocket);
 						

@@ -386,10 +386,6 @@ public class DrawingSurfaceView extends View {
 //		moving=!moving;
 	}
 	
-//	public boolean isMoving() {
-//		return moving;
-//	}
-	
 	private boolean validate(int index) {
 		if (index < 0 || index > lines.size()-1) { return false; }
 		return true;

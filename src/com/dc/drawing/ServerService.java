@@ -58,7 +58,7 @@ public class ServerService extends Service {
 			public void run() {
 				try {
 					Looper.prepare();
-					ss = new ServerSocket(6000);
+					ss = new ServerSocket(socketPort);
 					Log.d("ip: ", ss.getInetAddress().toString());
 					ipAddress = getLocalIpAddress();
 		
@@ -102,17 +102,17 @@ public class ServerService extends Service {
 	}
 	
 	 @Override
-	    public int onStartCommand(Intent intent, int flags, int startId) {
-			 String socketPortStr;			 
-			 socketPortStr = intent.getStringExtra("port");
-			 socketPort = Integer.parseInt(socketPortStr);
-			 
-			 Log.d("serverSocketPort", String.valueOf(socketPort));			 
-			 
-			 serverThread.start();
-			 
-			 return 0;
-	    }
+    public int onStartCommand(Intent intent, int flags, int startId) {
+		 String socketPortStr;			 
+		 socketPortStr = intent.getStringExtra("port");
+		 socketPort = Integer.parseInt(socketPortStr);
+		 
+		 Log.d("serverSocketPort", String.valueOf(socketPort));			 
+		 
+		 serverThread.start();
+		 
+		 return 0;
+    }
 
 	@Override
 	public void onDestroy() {

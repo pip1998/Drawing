@@ -11,7 +11,6 @@ import yuku.ambilwarna.AmbilWarnaDialog;
 import yuku.ambilwarna.AmbilWarnaDialog.OnAmbilWarnaListener;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.content.ComponentName;
@@ -33,13 +32,11 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /*
 telnet localhost 5554
 redir add tcp:5000:6000
 */
-@TargetApi(11)
 public class DrawingActivity extends FragmentActivity 
 	implements	HostDialogFragment.HostNoticeDialogListener, ClientDialogFragment.ClientNoticeDialogListener {
 
@@ -59,7 +56,7 @@ public class DrawingActivity extends FragmentActivity
 	Button next;
 	Button prev;
 	Button del;
-//	Button move;
+	TextView canMoveObjects;
 	SeekBar sizeSlider;
 	
 	int currentColour;
@@ -143,10 +140,15 @@ public class DrawingActivity extends FragmentActivity
 		colorDisplayer.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_OVER);
 		currentColour = Color.BLACK;
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(42, 42);
-		layoutParams.setMargins(2, 5, 2, 2);
+		layoutParams.setMargins(3, 5, 2, 2);
 		colorDisplayer.setLayoutParams(layoutParams);		
 
+		canMoveObjects = new TextView(this);
+		canMoveObjects.setText("Click and drag the canvas to move the selected object.");
+		canMoveObjects.setPadding(4, 0, 0, 0);
+				
 		final TextView drawWidthLabel = new TextView(this);
+		drawWidthLabel.setPadding(4, 0, 0, 0);
 		drawWidthLabel.setText("Set line width:");
 		
 		/*
@@ -155,6 +157,7 @@ public class DrawingActivity extends FragmentActivity
 		sizeSlider = new SeekBar(this);
 		sizeSlider.setMax(50);
         sizeSlider.setProgress(3);
+        sizeSlider.setPadding(3, 0, 3, 0);
         surface.setLineWidth(3);
 		sizeSlider.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -172,16 +175,14 @@ public class DrawingActivity extends FragmentActivity
 		next = new Button(this);
 		prev = new Button(this);
 		del  = new Button(this);
-//		move = new Button(this);
+
 		next.setEnabled(false);
 		prev.setEnabled(false);
 		del.setEnabled(false);
-//		move.setEnabled(false);
 		
 		next.setText("Next");
 		prev.setText("Prev");
 		del.setText("Delete");
-//		move.setText("Move");
 		
 		next.setOnClickListener(new OnClickListener()
 		{
@@ -210,15 +211,6 @@ public class DrawingActivity extends FragmentActivity
 			}
 		});
 		
-//		move.setOnClickListener(new OnClickListener()
-//		{
-//			@Override
-//			public void onClick(View v) {
-//				surface.setMoving();
-//				buttonCheck();
-//			}
-//		});		
-		
 		setEditing = new Button(this);
 		setEditing.setEnabled(false); //there are no lines to edit initially.
 		setEditing.setText("Edit");
@@ -241,8 +233,8 @@ public class DrawingActivity extends FragmentActivity
 					next.setEnabled(false);
 					prev.setEnabled(false);
 					del.setEnabled(false);
-//					move.setEnabled(false);
-//					move.setText("Move");
+					setEditObjectsVisible(false);
+
 				} else {
 					//Begin editing mode
 					setEditing.setText("Done");
@@ -252,18 +244,19 @@ public class DrawingActivity extends FragmentActivity
 					oldSliderValue = sizeSlider.getProgress();
 					oldColourValue = currentColour;
 					
+					setEditObjectsVisible(true);
 					//check for button stuff. Changes slider also.
 					buttonCheck();
-				}
+				}				
 			}			
 		});
 
 		networkLayout.addView(server,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,   
                         LayoutParams.WRAP_CONTENT,
                         1));
 		networkLayout.addView(client,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,   
                         LayoutParams.WRAP_CONTENT,
                         1));		
 		surfaceWidgets.addView(networkLayout);		
@@ -274,30 +267,52 @@ public class DrawingActivity extends FragmentActivity
 		
 		surfaceWidgets.addView(drawWidthLabel);
 		surfaceWidgets.addView(sizeSlider,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
 						LayoutParams.WRAP_CONTENT, 0));
 		surfaceWidgets.addView(setEditing);
 		
 		prevNextLayout.addView(prev,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,   
                         LayoutParams.WRAP_CONTENT,
                         1));
 		prevNextLayout.addView(next,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,   
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,   
                         LayoutParams.WRAP_CONTENT,
                         1));		
 		surfaceWidgets.addView(prevNextLayout);
 		
 		surfaceWidgets.addView(del);
-//		surfaceWidgets.addView(move);
+		surfaceWidgets.addView(canMoveObjects,
+			new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,   
+                        LayoutParams.WRAP_CONTENT));
 		
 		surfaceLayout.addView(surfaceWidgets, 
-				new LinearLayout.LayoutParams(150, LayoutParams.FILL_PARENT));
+				new LinearLayout.LayoutParams(150, LayoutParams.MATCH_PARENT));
 		surfaceLayout.addView(surface,
-				new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+				new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 				
 		setContentView(surfaceLayout);
 		surface.setParent(this);
+		
+		setEditObjectsVisible(false);
+	}
+	
+	public void setEditObjectsVisible(Boolean isVisible)
+	{		
+		if(isVisible)
+		{
+			next.setVisibility(View.VISIBLE);
+			prev.setVisibility(View.VISIBLE);
+			del.setVisibility(View.VISIBLE);
+			canMoveObjects.setVisibility(View.VISIBLE);
+		}
+		else
+		{
+			next.setVisibility(View.GONE);
+			prev.setVisibility(View.GONE);
+			del.setVisibility(View.GONE);
+			canMoveObjects.setVisibility(View.GONE);
+		}
 	}
 	
 	public void colorpicker() {
@@ -328,6 +343,7 @@ public class DrawingActivity extends FragmentActivity
 	//Check if edit/prev/next/delete buttons should be enabled or not.
 	public void buttonCheck() {
 		Log.d("Activity","Checking buttons");
+		
 		//always update to whatever the current shape colour is.
 		colorDisplayer.getBackground().setColorFilter(surface.getColour(), PorterDuff.Mode.SRC_OVER);
 		
@@ -338,8 +354,7 @@ public class DrawingActivity extends FragmentActivity
 			prev.setEnabled(false);
 			setEditing.setEnabled(false);
 			setEditing.setText("Edit");
-//			move.setEnabled(false);
-//			move.setText("Move");
+			setEditObjectsVisible(false);
 			return;
 		}
 		
@@ -349,7 +364,7 @@ public class DrawingActivity extends FragmentActivity
 		}
 		
 		del.setEnabled(true);
-//		move.setEnabled(true);
+		//setEditObjectsVisible(true);
 				
 		if (surface.isAtLastItem()) {
 			next.setEnabled(false);
@@ -362,12 +377,6 @@ public class DrawingActivity extends FragmentActivity
 		} else {
 			prev.setEnabled(true);
 		}
-		
-//		if (surface.isMoving()) {
-//			move.setText("Stop");
-//		} else {
-//			move.setText("Move");
-//		}
 	}
 	
 	public void sendShapeFromDrawingSurface(Shape s) {
