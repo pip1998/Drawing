@@ -389,7 +389,9 @@ public class DrawingSurfaceView extends View {
 			selectedLineIndex=-1;
 			editing=false;
 		}
-		setEditing(true);
+		//Handle this edge case
+		if(validate(selectedLineIndex))
+			setEditing(true);
 		invalidate();
 	}
 	
